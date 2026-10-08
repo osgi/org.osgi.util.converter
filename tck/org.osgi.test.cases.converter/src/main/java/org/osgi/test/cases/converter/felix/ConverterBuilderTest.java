@@ -16,9 +16,7 @@
  */
 package org.osgi.test.cases.converter.felix;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -69,19 +67,19 @@ public class ConverterBuilderTest {
 						String[].class, v -> v.split(",")))
 				.build();
 
-		assertEquals("A", converter.convert(new String[] {
+		assertThat(converter.convert(new String[] {
 				"A", "B"
-		}).to(String.class));
-		assertEquals("A,B", ca.convert(new String[] {
+		}).to(String.class)).isEqualTo("A");
+		assertThat(ca.convert(new String[] {
 				"A", "B"
-		}).to(String.class));
+		}).to(String.class)).isEqualTo("A,B");
 
-		assertArrayEquals(new String[] {
+		assertThat(converter.convert("A,B").to(String[].class)).isEqualTo(new String[] {
 				"A,B"
-		}, converter.convert("A,B").to(String[].class));
-		assertArrayEquals(new String[] {
+		});
+		assertThat(ca.convert("A,B").to(String[].class)).isEqualTo(new String[] {
 				"A", "B"
-		}, ca.convert("A,B").to(String[].class));
+		});
 	}
 
 	static String convertToString(char[] a) {
@@ -101,20 +99,19 @@ public class ConverterBuilderTest {
 		cb.rule(Long.class, (f, t) -> -1L);
 		Converter ca = cb.build();
 
-		assertEquals("hi", ca.convert(new char[] {
+		assertThat(ca.convert(new char[] {
 				'h', 'i'
-		}).to(String.class));
-		assertEquals(Integer.valueOf(-1),
-				ca.convert("Hello").to(Integer.class));
-		assertEquals(Long.valueOf(-1), ca.convert("Hello").to(Long.class));
+		}).to(String.class)).isEqualTo("hi");
+		assertThat(ca.convert("Hello").to(Integer.class)).isEqualTo(Integer.valueOf(-1));
+		assertThat(ca.convert("Hello").to(Long.class)).isEqualTo(Long.valueOf(-1));
 
 		// Shadow the Integer variant but keep Long going to the Number variant.
 		Converter ca2 = ca.newConverterBuilder()
 				.rule(new TypeRule<String,Integer>(String.class, Integer.class,
 						s -> s.length()))
 				.build();
-		assertEquals(5, (int) ca2.convert("Hello").to(Integer.class));
-		assertEquals(Long.valueOf(-1), ca2.convert("Hello").to(Long.class));
+		assertThat((int) ca2.convert("Hello").to(Integer.class)).isEqualTo(5);
+		assertThat(ca2.convert("Hello").to(Long.class)).isEqualTo(Long.valueOf(-1));
 	}
 
 	@Test
@@ -149,12 +146,10 @@ public class ConverterBuilderTest {
 						}))
 				.build();
 
-		assertEquals(Long.valueOf(-2),
-				ca.convert(Integer.valueOf(2)).to(Long.class));
+		assertThat(ca.convert(Integer.valueOf(2)).to(Long.class)).isEqualTo(Long.valueOf(-2));
 
 		// This is the exception that the rule cannot handle
-		assertEquals(Long.valueOf(1),
-				ca.convert(Integer.valueOf(1)).to(Long.class));
+		assertThat(ca.convert(Integer.valueOf(1)).to(Long.class)).isEqualTo(Long.valueOf(1));
 	}
 
 	@Test
@@ -183,13 +178,11 @@ public class ConverterBuilderTest {
 		cb.rule((v, t) -> v.toString());
 		Converter ca = cb.build();
 
-		assertEquals(3L,
-				(long) ca.convert(Arrays.asList("a", "b", "c")).to(Long.class));
-		assertEquals(3, (long) ca.convert(Arrays.asList("a", "b", "c"))
-				.to(Integer.class));
-		assertEquals("[a, b, c]",
-				ca.convert(Arrays.asList("a", "b", "c")).to(String.class));
-		assertNull(ca.convert(Arrays.asList()).to(String.class));
+		assertThat((long) ca.convert(Arrays.asList("a", "b", "c")).to(Long.class)).isEqualTo(3L);
+		assertThat((long) ca.convert(Arrays.asList("a", "b", "c"))
+				.to(Integer.class)).isEqualTo(3);
+		assertThat(ca.convert(Arrays.asList("a", "b", "c")).to(String.class)).isEqualTo("[a, b, c]");
+		assertThat(ca.convert(Arrays.asList()).to(String.class)).isNull();
 	}
 
 	@Test
@@ -216,12 +209,10 @@ public class ConverterBuilderTest {
 
 		// The catchall converter should be called always because it can handle
 		// all and was registered first
-		assertEquals(1L,
-				(long) ca.convert(Arrays.asList("a", "b", "c")).to(Long.class));
-		assertEquals(1, (int) ca.convert(Arrays.asList("a", "b", "c"))
-				.to(Integer.class));
-		assertEquals("1",
-				ca.convert(Arrays.asList("a", "b", "c")).to(String.class));
+		assertThat((long) ca.convert(Arrays.asList("a", "b", "c")).to(Long.class)).isOne();
+		assertThat((int) ca.convert(Arrays.asList("a", "b", "c"))
+				.to(Integer.class)).isOne();
+		assertThat(ca.convert(Arrays.asList("a", "b", "c")).to(String.class)).isEqualTo("1");
 	}
 
 	@Test
@@ -244,33 +235,29 @@ public class ConverterBuilderTest {
 		});
 		Converter ca = cb.build();
 
-		assertEquals(new ArrayList<>(Arrays.asList("c", "b", "a")),
-				ca.convert(new String[] {
+		assertThat(ca.convert(new String[] {
 						"a", "b", "c"
 				}).to(new TypeReference<ArrayList<String>>() {
-				}));
-		assertEquals(0, snooped.size(), "Precondition");
+				})).isEqualTo(new ArrayList<>(Arrays.asList("c", "b", "a")));
+		assertThat(snooped.size()).as("Precondition").isEqualTo(0);
 		String[] sa0 = new String[] {
 				"a", "b", "c"
 		};
-		assertEquals(new LinkedList<>(Arrays.asList("a", "b", "c")),
-				ca.convert(sa0).to(LinkedList.class));
-		assertEquals(1, snooped.size());
-		assertEquals(LinkedList.class, snooped.get(sa0));
-		assertEquals(new CopyOnWriteArrayList<>(Arrays.asList("c", "b", "a")),
-				ca.convert(new String[] {
+		assertThat(ca.convert(sa0).to(LinkedList.class)).isEqualTo(new LinkedList<>(Arrays.asList("a", "b", "c")));
+		assertThat(snooped.size()).isEqualTo(1);
+		assertThat(snooped.get(sa0)).isEqualTo(LinkedList.class);
+		assertThat(ca.convert(new String[] {
 						"a", "b", "c"
 				}).to(new TypeReference<List<String>>() {
-				}));
+				})).isEqualTo(new CopyOnWriteArrayList<>(Arrays.asList("c", "b", "a")));
 
 		snooped.clear();
 		String[] sa = new String[] {
 				"a", "b", "c"
 		};
-		assertEquals(new CopyOnWriteArrayList<>(Arrays.asList("a", "b", "c")),
-				ca.convert(sa).to(CopyOnWriteArrayList.class));
-		assertEquals(1, snooped.size());
-		assertEquals(CopyOnWriteArrayList.class, snooped.get(sa));
+		assertThat(ca.convert(sa).to(CopyOnWriteArrayList.class)).isEqualTo(new CopyOnWriteArrayList<>(Arrays.asList("a", "b", "c")));
+		assertThat(snooped.size()).isEqualTo(1);
+		assertThat(snooped.get(sa)).isEqualTo(CopyOnWriteArrayList.class);
 	}
 
 	static interface MyIntf {

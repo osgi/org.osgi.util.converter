@@ -17,15 +17,8 @@
 package org.osgi.test.cases.converter.felix;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -71,8 +64,8 @@ public class ConverterMapTest {
 		Map<String,Long> m2 = converter.convert(m1)
 				.to(new TypeReference<Map<String,Long>>() {
 				});
-		assertEquals(1, m2.size());
-		assertEquals(987654321L, (long) m2.get("42"));
+		assertThat(m2).hasSize(1);
+		assertThat((long) m2.get("42")).isEqualTo(987654321L);
 	}
 
 	@Test
@@ -85,9 +78,9 @@ public class ConverterMapTest {
 		@SuppressWarnings("unchecked")
 		Dictionary<BigInteger,URL> d = converter.convert(m)
 				.to(Dictionary.class);
-		assertEquals(1, d.size());
-		assertSame(bi, d.keys().nextElement());
-		assertSame(url, d.get(bi));
+		assertThat(d.size()).isOne();
+		assertThat(d.keys().nextElement()).isSameAs(bi);
+		assertThat(d.get(bi)).isSameAs(url);
 	}
 
 	@Test
@@ -101,13 +94,13 @@ public class ConverterMapTest {
 
 		@SuppressWarnings("rawtypes")
 		Map m = converter.convert(mb).sourceAsBean().to(Map.class);
-		assertEquals(5, m.size());
-		assertEquals("You", m.get("me"));
-		assertTrue((boolean) m.get("f"));
-		assertFalse((boolean) m.get("enabled"));
-		assertArrayEquals(new int[] {
+		assertThat(m.size()).isEqualTo(5);
+		assertThat(m.get("me")).isEqualTo("You");
+		assertThat((boolean) m.get("f")).isTrue();
+		assertThat((boolean) m.get("enabled")).isFalse();
+		assertThat((int[]) m.get("numbers")).isEqualTo(new int[] {
 				3, 2, 1
-		}, (int[]) m.get("numbers"));
+		});
 	}
 
 	@Test
@@ -136,8 +129,8 @@ public class ConverterMapTest {
 				.sourceAsBean()
 				.to(new TypeReference<Map<String,String>>() {
 				});
-		assertEquals("true", m.get("enabled"));
-		assertEquals(expectedDate, m.get("startDate"));
+		assertThat(m.get("enabled")).isEqualTo("true");
+		assertThat(m.get("startDate")).isEqualTo(expectedDate);
 	}
 
 	@Test
@@ -149,12 +142,12 @@ public class ConverterMapTest {
 		m.put("numbers", "42");
 		m.put("s", "will disappear");
 		MyBean mb = converter.convert(m).targetAsBean().to(MyBean.class);
-		assertEquals("Joe", mb.getMe());
-		assertTrue(mb.isEnabled());
-		assertNull(mb.getF());
-		assertArrayEquals(new int[] {
+		assertThat(mb.getMe()).isEqualTo("Joe");
+		assertThat(mb.isEnabled()).isTrue();
+		assertThat(mb.getF()).isNull();
+		assertThat(mb.getNumbers()).isEqualTo(new int[] {
 				42
-		}, mb.getNumbers());
+		});
 	}
 
 	public void testMapToJavaBean2() {
@@ -163,10 +156,10 @@ public class ConverterMapTest {
 		m.put("blah", "blahblah");
 		m.put("f", "true");
 		MyBean mb = converter.convert(m).to(MyBean.class);
-		assertNull(mb.getMe());
-		assertTrue(mb.getF());
-		assertFalse(mb.isEnabled());
-		assertNull(mb.getNumbers());
+		assertThat(mb.getMe()).isNull();
+		assertThat(mb.getF()).isTrue();
+		assertThat(mb.isEnabled()).isFalse();
+		assertThat(mb.getNumbers()).isNull();
 	}
 
 	@Test
@@ -195,10 +188,10 @@ public class ConverterMapTest {
 
 		@SuppressWarnings("rawtypes")
 		Map m = converter.convert(impl).to(Map.class);
-		assertEquals(3, m.size());
-		assertEquals("Chocolate!", m.get("foo"));
-		assertEquals(76543, (int) m.get("bar"));
-		assertEquals(true, (boolean) m.get("za.za"));
+		assertThat(m.size()).isEqualTo(3);
+		assertThat(m.get("foo")).isEqualTo("Chocolate!");
+		assertThat((int) m.get("bar")).isEqualTo(76543);
+		assertThat((boolean) m.get("za.za")).isTrue();
 	}
 
 	@Test
@@ -207,10 +200,10 @@ public class ConverterMapTest {
 
 		@SuppressWarnings("rawtypes")
 		Map m = converter.convert(impl).to(Map.class);
-		assertEquals(3, m.size());
-		assertEquals("Chocolate!", m.get("foo"));
-		assertEquals(76543, (int) m.get("bar"));
-		assertEquals(true, (boolean) m.get("za.za"));
+		assertThat(m.size()).isEqualTo(3);
+		assertThat(m.get("foo")).isEqualTo("Chocolate!");
+		assertThat((int) m.get("bar")).isEqualTo(76543);
+		assertThat((boolean) m.get("za.za")).isTrue();
 	}
 
 	@SuppressWarnings({
@@ -225,9 +218,9 @@ public class ConverterMapTest {
 		m.put("za.za", true);
 
 		TestInterface ti = converter.convert(m).to(TestInterface.class);
-		assertEquals("12345", ti.foo());
-		assertEquals(999, ti.bar());
-		assertEquals(Boolean.TRUE, ti.za_za());
+		assertThat(ti.foo()).isEqualTo("12345");
+		assertThat(ti.bar()).isEqualTo(999);
+		assertThat(ti.za_za()).isEqualTo(Boolean.TRUE);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -236,19 +229,11 @@ public class ConverterMapTest {
 		Map m = new HashMap<>();
 
 		TestInterface ti = converter.convert(m).to(TestInterface.class);
-		try {
-			ti.foo();
-			fail("Should have thrown a conversion exception");
-		} catch (ConversionException ce) {
-			// good
-		}
-		assertEquals(999, ti.bar("999"));
-		try {
-			assertNull(ti.za_za());
-			fail("Should have thrown a conversion exception");
-		} catch (ConversionException ce) {
-			// good
-		}
+		assertThatExceptionOfType(ConversionException.class).as("Should have thrown a conversion exception")
+				.isThrownBy(() -> ti.foo());
+		assertThat(ti.bar("999")).isEqualTo(999);
+		assertThatExceptionOfType(ConversionException.class).as("Should have thrown a conversion exception")
+				.isThrownBy(() -> assertThat(ti.za_za()).isNull());
 	}
 
 	@SuppressWarnings({
@@ -263,9 +248,9 @@ public class ConverterMapTest {
 		m.put("za.za", true);
 
 		TestAnnotation ta = converter.convert(m).to(TestAnnotation.class);
-		assertEquals("12345", ta.foo());
-		assertEquals(999, ta.bar());
-		assertTrue(ta.za_za());
+		assertThat(ta.foo()).isEqualTo("12345");
+		assertThat(ta.bar()).isEqualTo(999);
+		assertThat(ta.za_za()).isTrue();
 	}
 
 	@SuppressWarnings({
@@ -277,8 +262,8 @@ public class ConverterMapTest {
 		m.put("alt", "someval");
 
 		TestAnnotation ta = converter.convert(m).to(TestAnnotation.class);
-		assertEquals("fooo!", ta.foo());
-		assertEquals(42, ta.bar());
+		assertThat(ta.foo()).isEqualTo("fooo!");
+		assertThat(ta.bar()).isEqualTo(42);
 	}
 
 	@Test
@@ -289,11 +274,11 @@ public class ConverterMapTest {
 				.view()
 				.to(new TypeReference<Map<String,Object>>() {
 				});
-		assertEquals(3, m.size());
-		assertEquals("fooo!", m.get("foo"));
-		assertEquals(42, m.get("bar"));
+		assertThat(m.size()).isEqualTo(3);
+		assertThat(m.get("foo")).isEqualTo("fooo!");
+		assertThat(m.get("bar")).isEqualTo(42);
 		try {
-			assertEquals(false, m.get("za.za"));
+			assertThat(m.get("za.za")).isEqualTo(false);
 			fail("Should have thrown a conversion exception as there is no default for 'za.za'");
 		} catch (ConversionException ce) {
 			// good
@@ -312,19 +297,19 @@ public class ConverterMapTest {
 		SingleElementAnnotation sea = method
 				.getDeclaredAnnotation(SingleElementAnnotation.class);
 		Map m = converter.convert(sea).to(Map.class);
-		assertEquals(2, m.size());
-		assertArrayEquals(new String[] {
+		assertThat(m).hasSize(2);
+		assertThat((String[]) m.get("single.element.annotation")).isEqualTo(new String[] {
 				"hi", "there"
-		}, (String[]) m.get("single.element.annotation"));
-		assertEquals(42L, m.get("somethingElse"));
+		});
+		assertThat(m.get("somethingElse")).isEqualTo(42L);
 
 		m.put("somethingElse", 51.0);
 		SingleElementAnnotation sea2 = converter.convert(m)
 				.to(SingleElementAnnotation.class);
-		assertArrayEquals(new String[] {
+		assertThat(sea2.value()).isEqualTo(new String[] {
 				"hi", "there"
-		}, sea2.value());
-		assertEquals(51L, sea2.somethingElse());
+		});
+		assertThat(sea2.somethingElse()).isEqualTo(51L);
 	}
 
 	@SuppressWarnings({
@@ -336,27 +321,27 @@ public class ConverterMapTest {
 		Map m = new HashMap<>();
 		m.put("key", obj);
 		Map cm = converter.convert(m).to(Map.class);
-		assertNotSame(m, cm);
-		assertSame(m.get("key"), cm.get("key"));
+		assertThat(cm).isNotSameAs(m);
+		assertThat(cm.get("key")).isSameAs(m.get("key"));
 	}
 
 	@Test
 	public void testProxyObjectMethodsInterface() {
 		Map<String,String> m = new HashMap<>();
 		TestInterface ti = converter.convert(m).to(TestInterface.class);
-		assertTrue(ti.equals(ti));
-		assertFalse(ti.equals(new Object()));
-		assertFalse(ti.equals(null));
+		assertThat(ti).isEqualTo(ti);
+		assertThat(ti).isNotEqualTo(new Object());
+		assertThat(ti).isNotEqualTo(null);
 
-		assertNotNull(ti.toString());
-		assertTrue(ti.hashCode() != 0);
+		assertThat(ti.toString()).isNotNull();
+		assertThat(ti.hashCode()).isNotEqualTo(0);
 	}
 
 	@Test
 	public void testProxyObjectMethodsAnnotation() {
 		Map<String,String> m = new HashMap<>();
 		TestAnnotation ta = converter.convert(m).to(TestAnnotation.class);
-		assertTrue(ta.equals(ta));
+		assertThat(ta).isEqualTo(ta);
 	}
 
 	@Test
@@ -369,9 +354,9 @@ public class ConverterMapTest {
 		TestInterface ti = converter.convert(m)
 				.keysIgnoreCase()
 				.to(TestInterface.class);
-		assertEquals("Bleh", ti.foo());
-		assertEquals(21, ti.bar("42"));
-		assertTrue(ti.za_za());
+		assertThat(ti.foo()).isEqualTo("Bleh");
+		assertThat(ti.bar("42")).isEqualTo(21);
+		assertThat(ti.za_za()).isTrue();
 	}
 
 	@Test
@@ -382,14 +367,10 @@ public class ConverterMapTest {
 		m.put("za.za", true);
 
 		TestInterface ti = converter.convert(m).to(TestInterface.class);
-		try {
-			ti.foo();
-			fail("Should have thrown a conversion exception as 'foo' was not set");
-		} catch (ConversionException ce) {
-			// good
-		}
-		assertEquals(42, ti.bar("42"));
-		assertTrue(ti.za_za());
+		assertThatExceptionOfType(ConversionException.class).as("Should have thrown a conversion exception as 'foo' was not set")
+				.isThrownBy(() -> ti.foo());
+		assertThat(ti.bar("42")).isEqualTo(42);
+		assertThat(ti.za_za()).isTrue();
 	}
 
 	@Test
@@ -400,9 +381,9 @@ public class ConverterMapTest {
 		d.put("pong", "999");
 
 		MyDTO dto = converter.convert(d).keysIgnoreCase().to(MyDTO.class);
-		assertEquals(MyDTO.Count.ONE, dto.count);
-		assertEquals("Piiiiiiing!", dto.ping);
-		assertEquals(999L, dto.pong);
+		assertThat(dto.count).isEqualTo(MyDTO.Count.ONE);
+		assertThat(dto.ping).isEqualTo("Piiiiiiing!");
+		assertThat(dto.pong).isEqualTo(999L);
 	}
 
 	@Test
@@ -413,9 +394,9 @@ public class ConverterMapTest {
 		d.put("pong", "999");
 
 		MyDTO dto = converter.convert(d).to(MyDTO.class);
-		assertNull(dto.count);
-		assertNull(dto.ping);
-		assertEquals(999L, dto.pong);
+		assertThat(dto.count).isNull();
+		assertThat(dto.ping).isNull();
+		assertThat(dto.pong).isEqualTo(999L);
 	}
 
 	@Test
@@ -427,13 +408,13 @@ public class ConverterMapTest {
 		MyDTOwithOptionals dto = converter.convert(d)
 				.to(MyDTOwithOptionals.class);
 
-		assertThat(dto.text).isNotNull()
+		assertThat(dto.text)
 				.isPresent()
 				.hasValueSatisfying("NotNullText"::equals);
 
 		assertThat(dto.textNull).isNull();
 
-		assertThat(dto.textEmptyOptional).isNotNull().isNotPresent();
+		assertThat(dto.textEmptyOptional).isEmpty();
 	}
 
 	@Test
@@ -454,9 +435,8 @@ public class ConverterMapTest {
 				}) {
 				})
 				.build();
-		assertEquals("{foo=bar, password=xxx}", c.convert(m).to(String.class));
-		assertEquals("{foo=bar, password=secret}", m.toString(),
-				"Original should not be modified");
+		assertThat(c.convert(m).to(String.class)).isEqualTo("{foo=bar, password=xxx}");
+		assertThat(m).as("Original should not be modified").hasToString("{foo=bar, password=secret}");
 	}
 
 	@SuppressWarnings({
@@ -482,15 +462,15 @@ public class ConverterMapTest {
 
 		Method m1 = ta2cls.getDeclaredMethod("foo");
 		m1.setAccessible(true);
-		assertEquals("fooo!", m1.invoke(ta2));
+		assertThat(m1.invoke(ta2)).isEqualTo("fooo!");
 
 		Method m2 = ta2cls.getDeclaredMethod("bar");
 		m2.setAccessible(true);
-		assertEquals(99, m2.invoke(ta2));
+		assertThat(m2.invoke(ta2)).isEqualTo(99);
 
 		Method m3 = ta2cls.getDeclaredMethod("tar");
 		m3.setAccessible(true);
-		assertEquals(true, m3.invoke(ta2));
+		assertThat(m3.invoke(ta2)).isEqualTo(true);
 	}
 
 	@Test
@@ -498,9 +478,9 @@ public class ConverterMapTest {
 		Map<String,Boolean> m1 = Collections.singletonMap("Hi", Boolean.TRUE);
 		Map.Entry<String,Boolean> e1 = getMapEntry(m1);
 
-		assertTrue(converter.convert(e1).to(Boolean.class));
-		assertTrue(converter.convert(e1).to(boolean.class));
-		assertEquals("Hi", converter.convert(e1).to(String.class));
+		assertThat(converter.convert(e1).to(Boolean.class)).isTrue();
+		assertThat(converter.convert(e1).to(boolean.class)).isTrue();
+		assertThat(converter.convert(e1).to(String.class)).isEqualTo("Hi");
 
 	}
 
@@ -509,9 +489,9 @@ public class ConverterMapTest {
 		Map<Long,String> m1 = Collections.singletonMap(17L, "18");
 		Map.Entry<Long,String> e1 = getMapEntry(m1);
 
-		assertEquals(17L, converter.convert(e1).to(Number.class));
-		assertEquals("18", converter.convert(e1).to(String.class));
-		assertEquals("18", converter.convert(e1).to(Bar.class).value);
+		assertThat(converter.convert(e1).to(Number.class)).isEqualTo(17L);
+		assertThat(converter.convert(e1).to(String.class)).isEqualTo("18");
+		assertThat(converter.convert(e1).to(Bar.class).value).isEqualTo("18");
 	}
 
 	@Test
@@ -520,8 +500,7 @@ public class ConverterMapTest {
 				Short.valueOf((short) 567));
 		Map.Entry<String,Short> e1 = getMapEntry(m1);
 
-		assertEquals(Integer.valueOf(123),
-				converter.convert(e1).to(Integer.class));
+		assertThat(converter.convert(e1).to(Integer.class)).isEqualTo(Integer.valueOf(123));
 	}
 
 	@Test
@@ -529,8 +508,7 @@ public class ConverterMapTest {
 		Map<Long,Long> l1 = Collections.singletonMap(9L, 10L);
 		Map.Entry<Long,Long> e1 = getMapEntry(l1);
 
-		assertEquals(9L, (long) converter.convert(e1).to(long.class),
-				"Should take the key if key and value are equally suitable");
+		assertThat((long) converter.convert(e1).to(long.class)).as("Should take the key if key and value are equally suitable").isEqualTo(9L);
 	}
 
 	@Test
@@ -538,7 +516,7 @@ public class ConverterMapTest {
 		Map<Foo,Foo> m1 = Collections.singletonMap(new Foo(111), new Foo(999));
 		Map.Entry<Foo,Foo> e1 = getMapEntry(m1);
 
-		assertEquals("111", converter.convert(e1).to(Bar.class).value);
+		assertThat(converter.convert(e1).to(Bar.class).value).isEqualTo("111");
 	}
 
 	@Test
@@ -547,7 +525,7 @@ public class ConverterMapTest {
 		Map<Short,Integer> m1 = Collections.singletonMap(null, 5);
 		Map.Entry<Short,Integer> e1 = getMapEntry(m1);
 
-		assertEquals((Integer) 5, converter.convert(e1).to(Integer.class));
+		assertThat(converter.convert(e1).to(Integer.class)).isEqualTo((Integer) 5);
 	}
 
 	@Test
@@ -556,7 +534,7 @@ public class ConverterMapTest {
 		Map<Short,Integer> m1 = Collections.singletonMap((short) 4, null);
 		Map.Entry<Short,Integer> e1 = getMapEntry(m1);
 
-		assertEquals(4, converter.convert(e1).to(Short.class).intValue());
+		assertThat(converter.convert(e1).to(Short.class).intValue()).isEqualTo(4);
 	}
 
 	@Test
@@ -565,7 +543,7 @@ public class ConverterMapTest {
 		Map<Short,Integer> m1 = Collections.singletonMap(null, 5);
 		Map.Entry<Short,Integer> e1 = getMapEntry(m1);
 
-		assertEquals(5, converter.convert(e1).to(Number.class));
+		assertThat(converter.convert(e1).to(Number.class)).isEqualTo(5);
 	}
 
 	@Test
@@ -574,7 +552,7 @@ public class ConverterMapTest {
 		Map<Short,Integer> m1 = Collections.singletonMap((short) 4, null);
 		Map.Entry<Short,Integer> e1 = getMapEntry(m1);
 
-		assertEquals(4, converter.convert(e1).to(Number.class).intValue());
+		assertThat(converter.convert(e1).to(Number.class).intValue()).isEqualTo(4);
 	}
 
 	@Test
@@ -583,7 +561,7 @@ public class ConverterMapTest {
 		Map<Short,String> m1 = Collections.singletonMap(null, "5");
 		Map.Entry<Short,String> e1 = getMapEntry(m1);
 
-		assertEquals((Integer) 5, converter.convert(e1).to(Integer.class));
+		assertThat(converter.convert(e1).to(Integer.class)).isEqualTo((Integer) 5);
 	}
 
 	@Test
@@ -592,7 +570,7 @@ public class ConverterMapTest {
 		Map<String,Integer> m1 = Collections.singletonMap("4", null);
 		Map.Entry<String,Integer> e1 = getMapEntry(m1);
 
-		assertEquals((Integer) 4, converter.convert(e1).to(Integer.class));
+		assertThat(converter.convert(e1).to(Integer.class)).isEqualTo((Integer) 4);
 	}
 
 	@Test
@@ -601,7 +579,7 @@ public class ConverterMapTest {
 		Map<Short,Integer> m1 = Collections.singletonMap(null, 5);
 		Map.Entry<Short,Integer> e1 = getMapEntry(m1);
 
-		assertNull(converter.convert(e1).to(Long.class));
+		assertThat(converter.convert(e1).to(Long.class)).isNull();
 	}
 
 	@Test
@@ -610,7 +588,7 @@ public class ConverterMapTest {
 		Map<String,Integer> m1 = Collections.singletonMap(null, null);
 		Map.Entry<String,Integer> e1 = getMapEntry(m1);
 
-		assertNull(converter.convert(e1).to(Integer.class));
+		assertThat(converter.convert(e1).to(Integer.class)).isNull();
 	}
 
 	@Test
@@ -618,7 +596,7 @@ public class ConverterMapTest {
 		Dictionary<String,Object> dict = new TestDictionary<>();
 		dict.put("foo", "hello");
 		TestAnnotation ta = converter.convert(dict).to(TestAnnotation.class);
-		assertEquals("hello", ta.foo());
+		assertThat(ta.foo()).isEqualTo("hello");
 	}
 
 	@Test
@@ -627,7 +605,7 @@ public class ConverterMapTest {
 		dict.put("foo", "hello");
 		@SuppressWarnings("rawtypes")
 		Map m = converter.convert(dict).to(Map.class);
-		assertEquals("hello", m.get("foo"));
+		assertThat(m.get("foo")).isEqualTo("hello");
 	}
 
 	@Test
@@ -636,9 +614,9 @@ public class ConverterMapTest {
 
 		@SuppressWarnings("rawtypes")
 		Map m = converter.convert(tiwgp).to(Map.class);
-		assertEquals(2, m.size());
-		assertEquals("ha", m.get("hi"));
-		assertEquals("ho", m.get("ho"));
+		assertThat(m.size()).isEqualTo(2);
+		assertThat(m.get("hi")).isEqualTo("ha");
+		assertThat(m.get("ho")).isEqualTo("ho");
 	}
 
 	@Test
@@ -647,9 +625,9 @@ public class ConverterMapTest {
 
 		@SuppressWarnings("rawtypes")
 		Map m = converter.convert(tiwgp).to(Map.class);
-		assertEquals(2, m.size());
-		assertEquals("ha", m.get("hi"));
-		assertEquals("ho", m.get("ho"));
+		assertThat(m.size()).isEqualTo(2);
+		assertThat(m.get("hi")).isEqualTo("ha");
+		assertThat(m.get("ho")).isEqualTo("ho");
 	}
 
 	@Test
@@ -660,15 +638,15 @@ public class ConverterMapTest {
 
 		MyDTOWithKeyWords dto = converter.convert(m)
 				.to(MyDTOWithKeyWords.class);
-		assertEquals(123l, dto.$new);
-		assertEquals("987", dto.$continue);
+		assertThat(dto.$new).isEqualTo(123l);
+		assertThat(dto.$continue).isEqualTo("987");
 
 		Map<String,Object> m2 = converter.convert(dto)
 				.to(new TypeReference<Map<String,Object>>() {
 				});
-		assertEquals(2, m2.size());
-		assertEquals(123l, m2.get("new"));
-		assertEquals("987", m2.get("continue"));
+		assertThat(m2.size()).isEqualTo(2);
+		assertThat(m2.get("new")).isEqualTo(123l);
+		assertThat(m2.get("continue")).isEqualTo("987");
 	}
 
 	@Test
@@ -677,7 +655,7 @@ public class ConverterMapTest {
 		final TestValue testValue = converter
 				.convert(Collections.singletonMap("my.prefix.test.value", true))
 				.to(TestValue.class);
-		assertTrue(testValue.value());
+		assertThat(testValue.value()).isTrue();
 	}
 
 	@Test
@@ -690,7 +668,7 @@ public class ConverterMapTest {
 		Map<String,Object> map = converter.convert(annotation)
 				.to(new TypeReference<Map<String,Object>>() {
 				});
-		assertTrue((Boolean) map.get("my.prefix.test.value"));
+		assertThat((Boolean) map.get("my.prefix.test.value")).isTrue();
 	}
 
 	@Test
@@ -703,12 +681,12 @@ public class ConverterMapTest {
 		Map<String,Object> map = converter.convert(annotation)
 				.to(new TypeReference<Map<String,Object>>() {
 				});
-		assertTrue(map.containsKey("org.foo.bar.prefix.marker.annotation"));
-		assertTrue((Boolean) map.get("org.foo.bar.prefix.marker.annotation"));
+		assertThat(map).containsKey("org.foo.bar.prefix.marker.annotation");
+		assertThat((Boolean) map.get("org.foo.bar.prefix.marker.annotation")).isTrue();
 	}
 
 	private <K, V> Map.Entry<K,V> getMapEntry(Map<K,V> map) {
-		assertEquals(1, map.size(), "This method assumes a map of size 1");
+		assertThat(map).as("This method assumes a map of size 1").hasSize(1);
 		return map.entrySet().iterator().next();
 	}
 

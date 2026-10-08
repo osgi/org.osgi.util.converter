@@ -17,10 +17,8 @@
  *******************************************************************************/
 package org.osgi.test.cases.converter.junit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -111,9 +109,9 @@ public class CustomizedConversionComplianceTest {
 		Function<Object,Integer> cf = c.function().defaultValue(999).to(
 				Integer.class);
 		int i1 = cf.apply("123");
-		assertTrue(123 == i1);
+		assertThat(123).isEqualTo(i1);
 		int i2 = cf.apply("");
-		assertTrue(999 == i2);
+		assertThat(999).isEqualTo(i2);
 	}
 
 	/**
@@ -178,10 +176,10 @@ public class CustomizedConversionComplianceTest {
 		Date dateToBeConverted = new Date(Date.UTC(113, 10, 24, 7, 21, 0));
 
 		String stringConverted = c.convert(dateToBeConverted).to(String.class);
-		assertEquals(stringToBeConverted, stringConverted);
+		assertThat(stringConverted).isEqualTo(stringToBeConverted);
 	
 		Date dateConverted = c.convert(stringToBeConverted).to(Date.class);
-		assertEquals(dateToBeConverted,dateConverted);
+		assertThat(dateConverted).isEqualTo(dateToBeConverted);
 
 		MyBean mb = new MyBean();
 		mb.setStartDate(dateToBeConverted);
@@ -190,8 +188,8 @@ public class CustomizedConversionComplianceTest {
 		String booleanConverted = "true";
 		
 		Map<String, String> map = c.convert(mb).sourceAsBean().to(new TypeReference<Map<String,String>>(){});
-		assertEquals(booleanConverted, map.get("enabled"));
-		assertEquals(stringConverted, map.get("startDate"));
+		assertThat(map.get("enabled")).isEqualTo(booleanConverted);
+		assertThat(map.get("startDate")).isEqualTo(stringConverted);
 	}
 		
 	/**
@@ -289,10 +287,10 @@ public class CustomizedConversionComplianceTest {
 		Date dateToBeConverted = new Date(Date.UTC(113, 10, 24, 7, 21, 0));
 
 		String stringConverted = childConverter.convert(dateToBeConverted).to(String.class);
-		assertEquals(stringConverted,stringToBeConverted);		
+		assertThat(stringToBeConverted).isEqualTo(stringConverted);		
 	
 		Date dateConverted = childConverter.convert(stringToBeConverted).to(Date.class);
-		assertEquals(dateToBeConverted,dateConverted);
+		assertThat(dateConverted).isEqualTo(dateToBeConverted);
 		
 		MappingBean embeddedBean = new MappingBean();
 		embeddedBean.setEmbedded(new ExtObject());
@@ -303,7 +301,7 @@ public class CustomizedConversionComplianceTest {
 		@SuppressWarnings("unchecked")
 		Map<String,String> map = childConverter.convert(embeddedBean)
 				.to(Map.class);
-		assertEquals(embeddedBean.toString(), map.get("bean"));
+		assertThat(map.get("bean")).isEqualTo(embeddedBean.toString());
 
 		MyBean mb = new MyBean();
 		mb.setStartDate(dateToBeConverted);
@@ -311,8 +309,8 @@ public class CustomizedConversionComplianceTest {
 		map = childConverter.convert(mb).sourceAsBean().to(new TypeReference<Map<String,String>>(){});
 		
 		String booleanConverted = "true";
-		assertEquals(stringConverted, map.get("startDate"));
-		assertEquals(booleanConverted, map.get("enabled"));
+		assertThat(map.get("startDate")).isEqualTo(stringConverted);
+		assertThat(map.get("enabled")).isEqualTo(booleanConverted);
 		
 		MyErrorBean errorBean = new MyErrorBean();
 		errorBean.setProperty("simple_error");
@@ -401,11 +399,11 @@ public class CustomizedConversionComplianceTest {
 			})
 			Map<Object,Object> m = c.convert(tobeconverted).to(Map.class);
 		} catch(RuntimeException e){
-			assertEquals(error, e.getMessage());
+			assertThat(e.getMessage()).isEqualTo(error);
 			@SuppressWarnings("unchecked")
 			Map<Object,Object> m = c.convert(tobeconverted).to(Map.class);
-			assertNotNull(m);
-			assertEquals(error, m.get("error"));
+			assertThat(m).isNotNull();
+			assertThat(m.get("error")).isEqualTo(error);
 		}
 	}
 }

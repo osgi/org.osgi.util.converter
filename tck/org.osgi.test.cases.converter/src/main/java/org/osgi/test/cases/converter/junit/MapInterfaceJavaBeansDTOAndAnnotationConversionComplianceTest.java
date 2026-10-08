@@ -19,12 +19,8 @@
 package org.osgi.test.cases.converter.junit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -486,10 +482,8 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 	@Test
 	public void testFromScalarConversion() {
 		Converter converter = Converters.standardConverter();
-		try {
-			converter.convert("scalar").to(Map.class);
-			fail("Scalar to map-like structure not supported");
-		} catch (ConversionException e) {}
+		assertThatExceptionOfType(ConversionException.class).as("Scalar to map-like structure not supported")
+				.isThrownBy(() -> converter.convert("scalar").to(Map.class));
 	}
 
 	/**
@@ -520,7 +514,7 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		map.put(dateStr, "epoch");				
 		
 		date = converter.convert(map).to(Date.class);
-		assertEquals((calendar.getTime().getTime()/1000), (date.getTime()/1000));
+		assertThat((date.getTime()/1000)).isEqualTo((calendar.getTime().getTime()/1000));
 	}
 
 	/**
@@ -554,12 +548,12 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		Converter converter = Converters.standardConverter();
 		List<Date> dates = converter.convert(map).to(new TypeReference<List<Date>>() {});
 		
-		assertEquals(map.size(), dates.size());
+		assertThat(dates.size()).isEqualTo(map.size());
 
 		Iterator<String> keys = map.keySet().iterator();
 		while (keys.hasNext()) {
 			if (!dates.contains(df.parse(keys.next()))) {
-				fail();
+				fail("");
 			}
 		}
 	}
@@ -626,48 +620,48 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		// with live view
 		Map<String,String> converted = converter.convert(dtolike).view().to(
 				Map.class);
-		assertNotNull(converted);
-		assertEquals(2, converted.size());
-		assertEquals(dtolike.prop1, converted.get("prop1"));
-		assertEquals(dtolike.prop2, converted.get("prop2"));
+		assertThat(converted).isNotNull();
+		assertThat(converted.size()).isEqualTo(2);
+		assertThat(converted.get("prop1")).isEqualTo(dtolike.prop1);
+		assertThat(converted.get("prop2")).isEqualTo(dtolike.prop2);
 
 		// reflect backing object changes
 		dtolike.prop1 = "value1bis";
-		assertEquals(dtolike.prop1, converted.get("prop1"));
+		assertThat(converted.get("prop1")).isEqualTo(dtolike.prop1);
 
 		// do not reflect backing object changes
 		converted.put("prop1", "value1ter");
 		dtolike.prop1 = "value1frth";
-		assertFalse(dtolike.prop1.equals(converted.get("prop1")));
+		assertThat(dtolike.prop1).isNotEqualTo(converted.get("prop1"));
 
 		// without live view
 		converted = converter.convert(dtolike).to(Map.class);
-		assertNotNull(converted);
-		assertEquals(2, converted.size());
-		assertEquals(dtolike.prop1, converted.get("prop1"));
-		assertEquals(dtolike.prop2, converted.get("prop2"));
+		assertThat(converted).isNotNull();
+		assertThat(converted.size()).isEqualTo(2);
+		assertThat(converted.get("prop1")).isEqualTo(dtolike.prop1);
+		assertThat(converted.get("prop2")).isEqualTo(dtolike.prop2);
 
 		// do not reflect backing object changes
 		dtolike.prop1 = "value1fve";
-		assertFalse(dtolike.prop1.equals(converted.get("prop1")));
+		assertThat(dtolike.prop1).isNotEqualTo(converted.get("prop1"));
 
 		// Other Map interface
 		converted = converter.convert(dtolike).to(NavigableMap.class);
-		assertNotNull(converted);
-		assertTrue(NavigableMap.class.isAssignableFrom(converted.getClass()));
+		assertThat(converted).isNotNull();
+		assertThat(NavigableMap.class.isAssignableFrom(converted.getClass())).isTrue();
 
 		// concrete type
 		converted = converter.convert(dtolike).to(TreeMap.class);
-		assertNotNull(converted);
-		assertEquals(converted.getClass(), TreeMap.class);
+		assertThat(converted).isNotNull();
+		assertThat(TreeMap.class).isEqualTo(converted.getClass());
 
 		// handle generic type
 		Map<Character,String> converted2 = converter.convert(dtolike)
 				.to(new TypeReference<Map<Character,String>>() {});
-		assertNotNull(converted2);
-		assertEquals(1, converted2.size());
-		assertTrue(converted2.get('p').equals(dtolike.prop1)
-				|| converted2.get('p').equals(dtolike.prop2));
+		assertThat(converted2).isNotNull();
+		assertThat(converted2).hasSize(1);
+		assertThat(converted2.get('p').equals(dtolike.prop1)
+				|| converted2.get('p').equals(dtolike.prop2)).isTrue();
 	}
 
 	/**
@@ -693,16 +687,16 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		@SuppressWarnings("unchecked")
 		Dictionary<String,String> converted = converter.convert(dtolike)
 				.to(Dictionary.class);
-		assertNotNull(converted);
-		assertEquals(2, converted.size());
-		assertEquals(dtolike.prop1, converted.get("prop1"));
-		assertEquals(dtolike.prop2, converted.get("prop2"));
+		assertThat(converted).isNotNull();
+		assertThat(converted.size()).isEqualTo(2);
+		assertThat(converted.get("prop1")).isEqualTo(dtolike.prop1);
+		assertThat(converted.get("prop2")).isEqualTo(dtolike.prop2);
 
 		Dictionary<Character,Character> converted2 = converter.convert(dtolike)
 				.to(new TypeReference<Dictionary<Character,Character>>() {});
-		assertNotNull(converted2);
-		assertEquals(1, converted2.size());
-		assertEquals(Character.valueOf('v'), converted2.get('p'));
+		assertThat(converted2).isNotNull();
+		assertThat(converted2.size()).isOne();
+		assertThat(converted2.get('p')).isEqualTo(Character.valueOf('v'));
 	}
 
 	/**
@@ -779,27 +773,25 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		Converter converter = Converters.standardConverter();
 		MappingInterface mappingInterface = converter.convert(dtolike)
 				.to(MappingInterface.class);
-		assertNotNull(mappingInterface);
+		assertThat(mappingInterface).isNotNull();
 
-		assertEquals(dtolike.prop1, mappingInterface.prop1());
-		assertEquals(dtolike.prop2, mappingInterface.prop2());
+		assertThat(mappingInterface.prop1()).isEqualTo(dtolike.prop1);
+		assertThat(mappingInterface.prop2()).isEqualTo(dtolike.prop2);
 
 		// report changes
 		dtolike.prop2 = "value3";
-		assertEquals(dtolike.prop2, mappingInterface.prop2());
-		assertEquals(dtolike.prop2, mappingInterface.prop2("defaultValue"));
+		assertThat(mappingInterface.prop2()).isEqualTo(dtolike.prop2);
+		assertThat(mappingInterface.prop2("defaultValue")).isEqualTo(dtolike.prop2);
 
 		// use default value
-		assertEquals("defaultValue", mappingInterface.prop3("defaultValue"));
+		assertThat(mappingInterface.prop3("defaultValue")).isEqualTo("defaultValue");
 
 		// do not use default
 		dtolike.prop2 = null;
-		assertNull(mappingInterface.prop2(null));
+		assertThat(mappingInterface.prop2(null)).isNull();
 
-		try {
-			mappingInterface.prop4();
-			fail("ConversionException expected : undefined in DTOLike and no default ");
-		} catch (ConversionException e) {}
+		assertThatExceptionOfType(ConversionException.class).as("ConversionException expected : undefined in DTOLike and no default ")
+				.isThrownBy(() -> mappingInterface.prop4());
 
 		TypeWithoutGetProperties multiInterface = new TypeWithoutGetProperties(
 				false);
@@ -812,29 +804,29 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 
 		multiInterface.prop2("newValue2");
 
-		assertNotNull(converted);
-		assertEquals(4, converted.size());
+		assertThat(converted).isNotNull();
+		assertThat(converted).hasSize(4);
 
-		assertNull(converted.get("prop5"));
+		assertThat(converted.get("prop5")).isNull();
 
-		assertEquals(multiInterface.prop1(), converted.get("prop1"));
-		assertEquals(multiInterface.prop2(), converted.get("prop2"));
-		assertEquals(multiInterface.prop3(), converted.get("prop3"));
-		assertEquals(multiInterface.prop4(), converted.get("prop4"));
+		assertThat(converted.get("prop1")).isEqualTo(multiInterface.prop1());
+		assertThat(converted.get("prop2")).isEqualTo(multiInterface.prop2());
+		assertThat(converted.get("prop3")).isEqualTo(multiInterface.prop3());
+		assertThat(converted.get("prop4")).isEqualTo(multiInterface.prop4());
 
 		converted.put("prop4", "newValue4");
-		assertFalse(multiInterface.prop4().equals(converted.get("prop4")));
+		assertThat(multiInterface.prop4()).isNotEqualTo(converted.get("prop4"));
 
 		// use the first implemented interface
 		converted = converter.convert(multiInterface).view().to(Map.class);
 
-		assertNotNull(converted);
-		assertEquals(1, converted.size());
-		assertNull(converted.get("prop1"));
-		assertNull(converted.get("prop2"));
-		assertNull(converted.get("prop3"));
-		assertNull(converted.get("prop4"));
-		assertEquals(multiInterface.prop5(), converted.get("prop5"));
+		assertThat(converted).isNotNull();
+		assertThat(converted).hasSize(1);
+		assertThat(converted.get("prop1")).isNull();
+		assertThat(converted.get("prop2")).isNull();
+		assertThat(converted.get("prop3")).isNull();
+		assertThat(converted.get("prop4")).isNull();
+		assertThat(converted.get("prop5")).isEqualTo(multiInterface.prop5());
 	}
 
 	/**
@@ -868,26 +860,24 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		Converter converter = Converters.standardConverter();
 		AnnotationInterface annotationInterface = converter.convert(dtolike)
 				.to(AnnotationInterface.class);
-		assertNotNull(annotationInterface);
+		assertThat(annotationInterface).isNotNull();
 
-		assertEquals(dtolike.prop1, annotationInterface.prop1());
-		assertEquals(dtolike.prop2, annotationInterface.prop2());
+		assertThat(annotationInterface.prop1()).isEqualTo(dtolike.prop1);
+		assertThat(annotationInterface.prop2()).isEqualTo(dtolike.prop2);
 
 		// report changes
 		dtolike.prop2 = "newValue2";
-		assertEquals(dtolike.prop2, annotationInterface.prop2());
+		assertThat(annotationInterface.prop2()).isEqualTo(dtolike.prop2);
 
 		// use default value
-		assertEquals("value3", annotationInterface.prop3());
+		assertThat(annotationInterface.prop3()).isEqualTo("value3");
 
 		// use the given null
 		dtolike.prop2 = null;
-		assertEquals(null, annotationInterface.prop2());
+		assertThat(annotationInterface.prop2()).isNull();
 
-		try {
-			annotationInterface.prop4();
-			fail("ConversionException expected : undefined in DTOLike and no default ");
-		} catch (ConversionException e) {}
+		assertThatExceptionOfType(ConversionException.class).as("ConversionException expected : undefined in DTOLike and no default ")
+				.isThrownBy(() -> annotationInterface.prop4());
 
 		Map<String,String> map = new HashMap<>();
 		map.put("prop1", "value1");
@@ -895,13 +885,13 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		AnnotationInterface annotationInterfaceFromMap = converter.convert(map)
 				.to(AnnotationInterface.class);
 
-		assertEquals("value1", annotationInterfaceFromMap.prop1());
-		assertEquals("value2", annotationInterfaceFromMap.prop2());
+		assertThat(annotationInterfaceFromMap.prop1()).isEqualTo("value1");
+		assertThat(annotationInterfaceFromMap.prop2()).isEqualTo("value2");
 		map.put("prop2", null);
-		assertEquals(null, annotationInterfaceFromMap.prop2());
+		assertThat(annotationInterfaceFromMap.prop2()).isNull();
 		map.remove("prop2");
 		// still use default
-		assertEquals("value2", annotationInterfaceFromMap.prop2());
+		assertThat(annotationInterfaceFromMap.prop2()).isEqualTo("value2");
 
 		AnnotationInterface annotation = AnnotatedMappingClass.class
 				.getAnnotation(AnnotationInterface.class);
@@ -909,13 +899,13 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		@SuppressWarnings("unchecked")
 		Map<String,String> convertedMap = converter.convert(annotation)
 				.to(Map.class);
-		assertNotNull(convertedMap);
+		assertThat(convertedMap).isNotNull();
 		// detach from live view
 		convertedMap.put("prop5", "value5");
-		assertEquals(annotation.prop1(), convertedMap.get("prop1"));
-		assertEquals(annotation.prop2(), convertedMap.get("prop2"));
-		assertEquals(annotation.prop3(), convertedMap.get("prop3"));
-		assertEquals(annotation.prop4(), convertedMap.get("prop4"));
+		assertThat(convertedMap.get("prop1")).isEqualTo(annotation.prop1());
+		assertThat(convertedMap.get("prop2")).isEqualTo(annotation.prop2());
+		assertThat(convertedMap.get("prop3")).isEqualTo(annotation.prop3());
+		assertThat(convertedMap.get("prop4")).isEqualTo(annotation.prop4());
 	}
 
 	/**
@@ -976,24 +966,22 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 				.sourceAsBean()
 				.to(
 				new TypeReference<Map<String,String>>() {});
-		assertNotNull(converted);
-		assertEquals(4, converted.size());
-		assertEquals("extended", converted.get("embedded"));
+		assertThat(converted).isNotNull();
+		assertThat(converted.size()).isEqualTo(4);
+		assertThat(converted.get("embedded")).isEqualTo("extended");
 
-		try {
-			converter.convert(converted).targetAsBean().to(MappingBean.class);
-			fail("No way to create ExtObject");
-		} catch (ConversionException e) {}
+		assertThatExceptionOfType(ConversionException.class).as("No way to create ExtObject")
+				.isThrownBy(() -> converter.convert(converted).targetAsBean().to(MappingBean.class));
 
 		converted.remove("embedded");
 		MappingBean convertedBean = converter.convert(converted)
 				.targetAsBean()
 				.to(MappingBean.class);
-		assertNotNull(convertedBean);
-		assertEquals(bean.getP(), convertedBean.getP());
-		assertEquals(bean.getProp2(), convertedBean.getProp2());
-		assertEquals(bean.getProp3(), convertedBean.getProp3());
-		assertNull(convertedBean.getEmbedded());
+		assertThat(convertedBean).isNotNull();
+		assertThat(convertedBean.getP()).isEqualTo(bean.getP());
+		assertThat(convertedBean.getProp2()).isEqualTo(bean.getProp2());
+		assertThat(convertedBean.getProp3()).isEqualTo(bean.getProp3());
+		assertThat(convertedBean.getEmbedded()).isNull();
 	}
 
 	/**
@@ -1042,11 +1030,11 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 				.convert(withStaticAndPrivateFieldsDTOLike)
 				.sourceAsDTO()
 				.to(Map.class);
-		assertNotNull(map);
-		assertNull(map.get("prop0"));
-		assertNull(map.get("STATIC_FIELD"));
-		assertEquals(withStaticAndPrivateFieldsDTOLike.prop1, map.get("prop1"));
-		assertEquals(withStaticAndPrivateFieldsDTOLike.prop2, map.get("prop2"));
+		assertThat(map).isNotNull();
+		assertThat(map.get("prop0")).isNull();
+		assertThat(map.get("STATIC_FIELD")).isNull();
+		assertThat(map.get("prop1")).isEqualTo(withStaticAndPrivateFieldsDTOLike.prop1);
+		assertThat(map.get("prop2")).isEqualTo(withStaticAndPrivateFieldsDTOLike.prop2);
 
 		NotDTOLike notDtoLike = new NotDTOLike();
 		notDtoLike.prop1 = "value1_";
@@ -1055,17 +1043,15 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		AnnotationInterface annotationConverted = converter.convert(notDtoLike)
 				.sourceAsDTO()
 				.to(AnnotationInterface.class);
-		assertNotNull(annotationConverted);
-		assertEquals(notDtoLike.prop1, annotationConverted.prop1());
-		assertEquals(notDtoLike.prop2, annotationConverted.prop2());
-		assertEquals(notDtoLike.prop3, annotationConverted.prop3());
+		assertThat(annotationConverted).isNotNull();
+		assertThat(annotationConverted.prop1()).isEqualTo(notDtoLike.prop1);
+		assertThat(annotationConverted.prop2()).isEqualTo(notDtoLike.prop2);
+		assertThat(annotationConverted.prop3()).isEqualTo(notDtoLike.prop3);
 		notDtoLike.generateProp3();
-		assertEquals(notDtoLike.prop3, annotationConverted.prop3());
+		assertThat(annotationConverted.prop3()).isEqualTo(notDtoLike.prop3);
 
-		try {
-			annotationConverted.prop4();
-			fail("ConversionException expected for undefined field");
-		} catch (ConversionException e) {}
+		assertThatExceptionOfType(ConversionException.class).as("ConversionException expected for undefined field")
+				.isThrownBy(() -> annotationConverted.prop4());
 
 		map = new HashMap<String,String>();
 		map.put("prop1", "mapValue1");
@@ -1074,10 +1060,10 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		NotDTOLike notDtoLikeConverted = converter.convert(map)
 				.targetAsDTO()
 				.to(NotDTOLike.class);
-		assertNotNull(notDtoLikeConverted);
-		assertNull(notDtoLikeConverted.prop2);
-		assertEquals(map.get("prop1"), notDtoLikeConverted.prop1);
-		assertEquals(map.get("prop3"), notDtoLikeConverted.prop3);
+		assertThat(notDtoLikeConverted).isNotNull();
+		assertThat(notDtoLikeConverted.prop2).isNull();
+		assertThat(notDtoLikeConverted.prop1).isEqualTo(map.get("prop1"));
+		assertThat(notDtoLikeConverted.prop3).isEqualTo(map.get("prop3"));
 	}
 
 	/**
@@ -1110,12 +1096,12 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		Map<String,String> map = converter.convert(typeWithGetProperties)
 				.to(Map.class);
 
-		assertNotNull(map);
-		assertEquals(map.get("prop1"), typeWithGetProperties.prop1());
-		assertEquals(map.get("prop2"), typeWithGetProperties.prop2());
-		assertEquals(map.get("prop3"), typeWithGetProperties.prop3());
-		assertEquals(map.get("prop4"), typeWithGetProperties.prop4());
-		assertEquals(map.get("prop5"), typeWithGetProperties.prop5());
+		assertThat(map).isNotNull();
+		assertThat(typeWithGetProperties.prop1()).isEqualTo(map.get("prop1"));
+		assertThat(typeWithGetProperties.prop2()).isEqualTo(map.get("prop2"));
+		assertThat(typeWithGetProperties.prop3()).isEqualTo(map.get("prop3"));
+		assertThat(typeWithGetProperties.prop4()).isEqualTo(map.get("prop4"));
+		assertThat(typeWithGetProperties.prop5()).isEqualTo(map.get("prop5"));
 
 		try {
 			@SuppressWarnings("unused")
@@ -1223,54 +1209,44 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 
 		Map<String,String> map = converter.convert(dto)
 				.to(new TypeReference<Map<String,String>>() {});
-		assertEquals(resultmap, map);
+		assertThat(map).isEqualTo(resultmap);
 
 		KeyMappingDTOLike resultdto = converter.convert(resultmap)
 				.targetAsDTO()
 				.to(KeyMappingDTOLike.class);
 
-		assertEquals(dto.special$prop, resultdto.special$prop);
-		assertEquals(dto.special$$prop, resultdto.special$$prop);
-		assertEquals(dto.special_prop, resultdto.special_prop);
-		assertEquals(dto._specialprop, resultdto._specialprop);
-		assertEquals(dto.special__prop, resultdto.special__prop);
-		assertEquals(dto.special___prop, resultdto.special___prop);
-		assertEquals(dto.special_$__prop, resultdto.special_$__prop);
-		assertEquals(dto.special_$_prop, resultdto.special_$_prop);
-		assertEquals(dto.special$_$prop, resultdto.special$_$prop);
-		assertEquals(dto.special$$_$prop, resultdto.special$$_$prop);
+		assertThat(resultdto.special$prop).isEqualTo(dto.special$prop);
+		assertThat(resultdto.special$$prop).isEqualTo(dto.special$$prop);
+		assertThat(resultdto.special_prop).isEqualTo(dto.special_prop);
+		assertThat(resultdto._specialprop).isEqualTo(dto._specialprop);
+		assertThat(resultdto.special__prop).isEqualTo(dto.special__prop);
+		assertThat(resultdto.special___prop).isEqualTo(dto.special___prop);
+		assertThat(resultdto.special_$__prop).isEqualTo(dto.special_$__prop);
+		assertThat(resultdto.special_$_prop).isEqualTo(dto.special_$_prop);
+		assertThat(resultdto.special$_$prop).isEqualTo(dto.special$_$prop);
+		assertThat(resultdto.special$$_$prop).isEqualTo(dto.special$$_$prop);
 
 		KeyMappingAnnotation keyMappingAnnotation = KeyMappingAnnotatedClass.class
 				.getAnnotation(KeyMappingAnnotation.class);
 
 		map = converter.convert(keyMappingAnnotation)
 				.to(new TypeReference<Map<String,String>>() {});
-		assertEquals(resultmap, map);
+		assertThat(map).isEqualTo(resultmap);
 
 		KeyMappingAnnotation resultkeyMappingAnnotation = converter
 				.convert(resultmap)
 				.to(KeyMappingAnnotation.class);
 
-		assertEquals(keyMappingAnnotation.special$prop(),
-				resultkeyMappingAnnotation.special$prop());
-		assertEquals(keyMappingAnnotation.special$$prop(),
-				resultkeyMappingAnnotation.special$$prop());
-		assertEquals(keyMappingAnnotation.special_prop(),
-				resultkeyMappingAnnotation.special_prop());
-		assertEquals(keyMappingAnnotation._specialprop(),
-				resultkeyMappingAnnotation._specialprop());
-		assertEquals(keyMappingAnnotation.special__prop(),
-				resultkeyMappingAnnotation.special__prop());
-		assertEquals(keyMappingAnnotation.special___prop(),
-				resultkeyMappingAnnotation.special___prop());
-		assertEquals(keyMappingAnnotation.special_$__prop(),
-				resultkeyMappingAnnotation.special_$__prop());
-		assertEquals(keyMappingAnnotation.special_$_prop(),
-				resultkeyMappingAnnotation.special_$_prop());
-		assertEquals(keyMappingAnnotation.special$_$prop(),
-				resultkeyMappingAnnotation.special$_$prop());
-		assertEquals(keyMappingAnnotation.special$$_$prop(),
-				resultkeyMappingAnnotation.special$$_$prop());
+		assertThat(resultkeyMappingAnnotation.special$prop()).isEqualTo(keyMappingAnnotation.special$prop());
+		assertThat(resultkeyMappingAnnotation.special$$prop()).isEqualTo(keyMappingAnnotation.special$$prop());
+		assertThat(resultkeyMappingAnnotation.special_prop()).isEqualTo(keyMappingAnnotation.special_prop());
+		assertThat(resultkeyMappingAnnotation._specialprop()).isEqualTo(keyMappingAnnotation._specialprop());
+		assertThat(resultkeyMappingAnnotation.special__prop()).isEqualTo(keyMappingAnnotation.special__prop());
+		assertThat(resultkeyMappingAnnotation.special___prop()).isEqualTo(keyMappingAnnotation.special___prop());
+		assertThat(resultkeyMappingAnnotation.special_$__prop()).isEqualTo(keyMappingAnnotation.special_$__prop());
+		assertThat(resultkeyMappingAnnotation.special_$_prop()).isEqualTo(keyMappingAnnotation.special_$_prop());
+		assertThat(resultkeyMappingAnnotation.special$_$prop()).isEqualTo(keyMappingAnnotation.special$_$prop());
+		assertThat(resultkeyMappingAnnotation.special$$_$prop()).isEqualTo(keyMappingAnnotation.special$$_$prop());
 
 		KeyMappingBean bean = new KeyMappingBean();
 		bean.setSpecial$prop("org.osgi.util.converter.test.specialprop");
@@ -1289,22 +1265,20 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 				.to(new TypeReference<Map<String,String>>() {});
 		Map<String,String> resultmap2 = new HashMap<>(resultmap);
 		resultmap2.remove("org.osgi.util.converter.test..specialprop");
-		assertEquals(resultmap2, map);
+		assertThat(map).isEqualTo(resultmap2);
 
 		KeyMappingBean resultbean = converter.convert(resultmap)
 				.targetAsBean()
 				.to(KeyMappingBean.class);
-		assertEquals(bean.getSpecial$prop(), resultbean.getSpecial$prop());
-		assertEquals(bean.getSpecial$$prop(), resultbean.getSpecial$$prop());
-		assertEquals(bean.getSpecial_prop(), resultbean.getSpecial_prop());
-		assertEquals(bean.getSpecial__prop(), resultbean.getSpecial__prop());
-		assertEquals(bean.getSpecial___prop(), resultbean.getSpecial___prop());
-		assertEquals(bean.getSpecial_$__prop(),
-				resultbean.getSpecial_$__prop());
-		assertEquals(bean.getSpecial_$_prop(), resultbean.getSpecial_$_prop());
-		assertEquals(bean.getSpecial$_$prop(), resultbean.getSpecial$_$prop());
-		assertEquals(bean.getSpecial$$_$prop(),
-				resultbean.getSpecial$$_$prop());
+		assertThat(resultbean.getSpecial$prop()).isEqualTo(bean.getSpecial$prop());
+		assertThat(resultbean.getSpecial$$prop()).isEqualTo(bean.getSpecial$$prop());
+		assertThat(resultbean.getSpecial_prop()).isEqualTo(bean.getSpecial_prop());
+		assertThat(resultbean.getSpecial__prop()).isEqualTo(bean.getSpecial__prop());
+		assertThat(resultbean.getSpecial___prop()).isEqualTo(bean.getSpecial___prop());
+		assertThat(resultbean.getSpecial_$__prop()).isEqualTo(bean.getSpecial_$__prop());
+		assertThat(resultbean.getSpecial_$_prop()).isEqualTo(bean.getSpecial_$_prop());
+		assertThat(resultbean.getSpecial$_$prop()).isEqualTo(bean.getSpecial$_$prop());
+		assertThat(resultbean.getSpecial$$_$prop()).isEqualTo(bean.getSpecial$$_$prop());
 
 		KeyMappingInterface inter = new KeyMappingInterface() {
 			String	_specialprop	= "org.osgi.util.converter.test..specialprop";
@@ -1373,21 +1347,21 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 				.sourceAs(KeyMappingInterface.class)
 				.to(
 				new TypeReference<Map<String,String>>() {});
-		assertEquals(resultmap, map);
+		assertThat(map).isEqualTo(resultmap);
 
 		KeyMappingInterface resultinter = converter.convert(resultmap)
 				.to(KeyMappingInterface.class);
 
-		assertEquals(inter.special$prop(), resultinter.special$prop());
-		assertEquals(inter.special$$prop(), resultinter.special$$prop());
-		assertEquals(inter.special_prop(), resultinter.special_prop());
-		assertEquals(inter._specialprop(), resultinter._specialprop());
-		assertEquals(inter.special__prop(), resultinter.special__prop());
-		assertEquals(inter.special___prop(), resultinter.special___prop());
-		assertEquals(inter.special_$__prop(), resultinter.special_$__prop());
-		assertEquals(inter.special_$_prop(), resultinter.special_$_prop());
-		assertEquals(inter.special$_$prop(), resultinter.special$_$prop());
-		assertEquals(inter.special$$_$prop(), resultinter.special$$_$prop());
+		assertThat(resultinter.special$prop()).isEqualTo(inter.special$prop());
+		assertThat(resultinter.special$$prop()).isEqualTo(inter.special$$prop());
+		assertThat(resultinter.special_prop()).isEqualTo(inter.special_prop());
+		assertThat(resultinter._specialprop()).isEqualTo(inter._specialprop());
+		assertThat(resultinter.special__prop()).isEqualTo(inter.special__prop());
+		assertThat(resultinter.special___prop()).isEqualTo(inter.special___prop());
+		assertThat(resultinter.special_$__prop()).isEqualTo(inter.special_$__prop());
+		assertThat(resultinter.special_$_prop()).isEqualTo(inter.special_$_prop());
+		assertThat(resultinter.special$_$prop()).isEqualTo(inter.special$_$prop());
+		assertThat(resultinter.special$$_$prop()).isEqualTo(inter.special$$_$prop());
 	}
 
 	@Test
@@ -1411,7 +1385,7 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		Converter converter = Converters.standardConverter();
 		MyDTO2 converted = converter.convert(dto).to(MyDTO2.class);
 
-		assertEquals(Arrays.asList(999L, 1000L), converted.longList);
+		assertThat(converted.longList).isEqualTo(Arrays.asList(999L, 1000L));
 		Map<String,MyDTO3> nestedMap = converted.dtoMap;
 
 		// Check iteration order is preserved by iterating
@@ -1421,19 +1395,15 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 			Map.Entry<String,MyDTO3> entry = it.next();
 			switch (i) {
 				case 0 :
-					assertEquals("zzz", entry.getKey());
+					assertThat(entry.getKey()).isEqualTo("zzz");
 					MyDTO3 dto1 = entry.getValue();
-					assertEquals(
-							new HashSet<Character>(Arrays.asList('f', 'o')),
-							dto1.charSet);
+					assertThat(dto1.charSet).isEqualTo(new HashSet<Character>(Arrays.asList('f', 'o')));
 					break;
 				case 1 :
-					assertEquals("aaa", entry.getKey());
+					assertThat(entry.getKey()).isEqualTo("aaa");
 					MyDTO3 dto2 = entry.getValue();
-					assertEquals(
-							new HashSet<Character>(
-									Arrays.asList('b', 'a', 'r')),
-							dto2.charSet);
+					assertThat(dto2.charSet).isEqualTo(new HashSet<Character>(
+									Arrays.asList('b', 'a', 'r')));
 					break;
 				default :
 					fail("Unexpected number of elements on map");
@@ -1451,12 +1421,11 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		Converter converter = Converters.standardConverter();
 		MyGenericDTOWithVariables<Character> converted = converter.convert(dto)
 				.to(new TypeReference<MyGenericDTOWithVariables<Character>>() {});
-		assertEquals(Character.valueOf('1'), converted.raw);
-		assertTrue(Arrays.equals(new Character[] {
+		assertThat(converted.raw).isEqualTo(Character.valueOf('1'));
+		assertThat(converted.array).isEqualTo(new Character[]{
 				'f', 'o', 'o'
-		}, converted.array));
-		assertEquals(new HashSet<Character>(Arrays.asList('f', 'o')),
-				converted.set);
+		});
+		assertThat(converted.set).isEqualTo(new HashSet<Character>(Arrays.asList('f', 'o')));
 	}
 
 	@Test
@@ -1467,8 +1436,7 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		Converter converter = Converters.standardConverter();
 		MyGenericInterface converted = converter.convert(dto)
 				.to(MyGenericInterface.class);
-		assertEquals(new HashSet<Character>(Arrays.asList('f', 'o')),
-				converted.charSet());
+		assertThat(converted.charSet()).isEqualTo(new HashSet<Character>(Arrays.asList('f', 'o')));
 	}
 
 	@Test
@@ -1514,12 +1482,11 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		MyGenericInterfaceWithVariables<Character> converted = converter
 				.convert(dto)
 				.to(new TypeReference<MyGenericInterfaceWithVariables<Character>>() {});
-		assertEquals(Character.valueOf('1'), converted.raw());
-		assertTrue(Arrays.equals(new Character[] {
+		assertThat(converted.raw()).isEqualTo(Character.valueOf('1'));
+		assertThat(converted.array()).isEqualTo(new Character[]{
 				'f', 'o', 'o'
-		}, converted.array()));
-		assertEquals(new HashSet<Character>(Arrays.asList('f', 'o')),
-				converted.set());
+		});
+		assertThat(converted.set()).isEqualTo(new HashSet<Character>(Arrays.asList('f', 'o')));
 	}
 
 	@Test
@@ -1529,32 +1496,27 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		MyMarkerAnnotation ann = MarkedInterface.class
 				.getAnnotation(MyMarkerAnnotation.class);
 		Map< ? , ? > m = converter.convert(ann).to(Map.class);
-		assertEquals(1, m.size());
-		assertEquals(Boolean.TRUE, m.get("my.marker.annotation"));
+		assertThat(m.size()).isOne();
+		assertThat(m.get("my.marker.annotation")).isEqualTo(Boolean.TRUE);
 
 		Object res = converter.convert(m).to(MyMarkerAnnotation.class);
-		assertTrue(res instanceof MyMarkerAnnotation);
+		assertThat(res).isInstanceOf(MyMarkerAnnotation.class);
 		Object res2 = converter.convert(
 				Collections.singletonMap("my.marker.annotation", Boolean.TRUE))
 				.to(MyMarkerAnnotation.class);
-		assertTrue(res2 instanceof MyMarkerAnnotation);
+		assertThat(res2).isInstanceOf(MyMarkerAnnotation.class);
 		Object res3 = converter
 				.convert(Collections.singletonMap("my.marker.annotation",
 						"true"))
 				.to(MyMarkerAnnotation.class);
-		assertTrue(res3 instanceof MyMarkerAnnotation);
+		assertThat(res3).isInstanceOf(MyMarkerAnnotation.class);
 
-		try {
-			converter.convert(new HashMap<String,Object>())
-					.to(MyMarkerAnnotation.class);
-			fail("Should have thrown a Conversion Exception");
-		} catch (ConversionException ce) {
-			// good
-		}
+		assertThatExceptionOfType(ConversionException.class).as("Should have thrown a Conversion Exception")
+				.isThrownBy(() -> converter.convert(new HashMap<String,Object>()) .to(MyMarkerAnnotation.class));
 
 		Map<String,String> m2 = converter.convert(ann)
 				.to(new TypeReference<Map<String,String>>() {});
-		assertEquals("true", m2.get("my.marker.annotation"));
+		assertThat(m2.get("my.marker.annotation")).isEqualTo("true");
 	}
 
 	@Test
@@ -1564,27 +1526,27 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		SingleElementAnnotation ann = SingleElementAnnotatedClass.class
 				.getAnnotation(SingleElementAnnotation.class);
 		Map< ? , ? > m = converter.convert(ann).to(Map.class);
-		assertEquals(1, m.size());
-		assertEquals("123", m.get("single.element.annotation"));
+		assertThat(m.size()).isOne();
+		assertThat(m.get("single.element.annotation")).isEqualTo("123");
 		Map<Object, Object> m2 = new HashMap<>(m);
 		m2.put("some.key", "some.value");
 
 		SingleElementAnnotation res = converter.convert(m2)
 				.to(SingleElementAnnotation.class);
-		assertEquals("123", res.value());
+		assertThat(res.value()).isEqualTo("123");
 		SingleElementAnnotation res2 = converter
 				.convert(Collections.singletonMap("single.element.annotation",
 						456))
 				.to(SingleElementAnnotation.class);
-		assertEquals("456", res2.value());
+		assertThat(res2.value()).isEqualTo("456");
 
 		SingleElementAnnotation res3 = converter.convert(Collections.emptyMap())
 				.to(SingleElementAnnotation.class);
-		assertEquals("nothing!", res3.value());
+		assertThat(res3.value()).isEqualTo("nothing!");
 
 		Map<String,Long> m3 = converter.convert(res2)
 				.to(new TypeReference<Map<String,Long>>() {});
-		assertEquals(Long.valueOf(456L), m3.get("single.element.annotation"));
+		assertThat(m3.get("single.element.annotation")).isEqualTo(Long.valueOf(456L));
 	}
 
 	@Test
@@ -1596,7 +1558,7 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		Converter converter = Converters.standardConverter();
 		SingleElementAnnotationPrefix ann = converter.convert(m)
 				.to(SingleElementAnnotationPrefix.class);
-		assertEquals(-999L, ann.value());
+		assertThat(ann.value()).isEqualTo(-999L);
 	}
 
 	static interface EmptyInterface {
@@ -1647,7 +1609,7 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 				.standardConverter()
 				.convert(new HashMap<String,Object>())
 				.to(clazz);
-		assertEquals(InterfaceWithDefaultMethod.RESULT, i.defaultMethod());
+		assertThat(i.defaultMethod()).isEqualTo(InterfaceWithDefaultMethod.RESULT);
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
@@ -1665,7 +1627,7 @@ public class MapInterfaceJavaBeansDTOAndAnnotationConversionComplianceTest {
 		Map<String,Object> map = converter.convert(annotation)
 				.to(new TypeReference<Map<String,Object>>() {
 				});
-		assertTrue(map.containsKey("org.foo.bar.prefix.marker.annotation"));
-		assertTrue((Boolean) map.get("org.foo.bar.prefix.marker.annotation"));
+		assertThat(map).containsKey("org.foo.bar.prefix.marker.annotation");
+		assertThat((Boolean) map.get("org.foo.bar.prefix.marker.annotation")).isTrue();
 	}
 }
