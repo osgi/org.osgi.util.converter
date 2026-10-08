@@ -16,8 +16,8 @@
  */
 package org.osgi.test.cases.converter.felix;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,11 +32,11 @@ public class ConverterFunctionTest {
 	@Test
 	public void testConverterFunction() {
 		Converter c = Converters.standardConverter();
-		assertEquals(12.5, c.convert("12.5").to(double.class), 0.001);
+		assertThat(c.convert("12.5").to(double.class)).isCloseTo(12.5, within(0.001));
 
 		Function<Object,Double> f = c.function().to(double.class);
-		assertEquals(12.5, f.apply("12.5"), 0.001);
-		assertEquals(50.505, f.apply("50.505"), 0.001);
+		assertThat(f.apply("12.5")).isCloseTo(12.5, within(0.001));
+		assertThat(f.apply("50.505")).isCloseTo(50.505, within(0.001));
 	}
 
 	@Test
@@ -47,13 +47,11 @@ public class ConverterFunctionTest {
 				.defaultValue(999)
 				.to(Integer.class);
 
-		assertEquals(Integer.valueOf(999), cf.apply(""));
-		assertEquals(Integer.valueOf(999),
-				c.convert("").defaultValue(999).to(Integer.class));
+		assertThat(cf.apply("")).isEqualTo(Integer.valueOf(999));
+		assertThat(c.convert("").defaultValue(999).to(Integer.class)).isEqualTo(Integer.valueOf(999));
 
-		assertEquals(Integer.valueOf(123), cf.apply("123"));
-		assertEquals(Integer.valueOf(123),
-				c.convert("123").defaultValue(999).to(Integer.class));
+		assertThat(cf.apply("123")).isEqualTo(Integer.valueOf(123));
+		assertThat(c.convert("123").defaultValue(999).to(Integer.class)).isEqualTo(Integer.valueOf(123));
 	}
 
 	@Test
@@ -64,7 +62,7 @@ public class ConverterFunctionTest {
 		String[] sa = new String[] {
 				"h", "i"
 		};
-		assertEquals("h", cf.apply(sa));
+		assertThat(cf.apply(sa)).isEqualTo("h");
 
 		Converter ac = c.newConverterBuilder()
 				.rule(new Rule<String[],String>(v -> String.join("", v)) {
@@ -72,7 +70,7 @@ public class ConverterFunctionTest {
 				.build();
 
 		Function<Object,String> af = ac.function().to(String.class);
-		assertEquals("hi", af.apply(sa));
+		assertThat(af.apply(sa)).isEqualTo("hi");
 	}
 
 	@Test
@@ -94,13 +92,13 @@ public class ConverterFunctionTest {
 				.targetAsDTO()
 				.to(MyDTO.class);
 		MyDTO myDTO = cvf.apply(map);
-		assertEquals(MyDTO.Count.TWO, myDTO.count);
-		assertEquals("someText", myDTO.ping);
-		assertEquals(7, myDTO.pong);
-		assertNotNull(myDTO.embedded);
-		assertEquals(MyEmbeddedDTO.Alpha.C, myDTO.embedded.alpha);
-		assertEquals("?", myDTO.embedded.marco);
-		assertEquals(123456, myDTO.embedded.polo);
+		assertThat(myDTO.count).isEqualTo(MyDTO.Count.TWO);
+		assertThat(myDTO.ping).isEqualTo("someText");
+		assertThat(myDTO.pong).isEqualTo(7);
+		assertThat(myDTO.embedded).isNotNull();
+		assertThat(myDTO.embedded.alpha).isEqualTo(MyEmbeddedDTO.Alpha.C);
+		assertThat(myDTO.embedded.marco).isEqualTo("?");
+		assertThat(myDTO.embedded.polo).isEqualTo(123456);
 
 	}
 }

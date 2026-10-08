@@ -18,10 +18,8 @@
 
 package org.osgi.test.cases.converter.junit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -91,25 +89,25 @@ public class ScalarConversionComplianceTest {
 
 		boolean booleanConverted = converter.convert(fstToBoConverted)
 				.to(boolean.class);
-		assertTrue(booleanConverted);
+		assertThat(booleanConverted).isTrue();
 
 		char charConverted = converter.convert(fstToBoConverted).to(char.class);
-		assertEquals((char) 1, charConverted);
+		assertThat(charConverted).isEqualTo((char) 1);
 
 		int intConverted = converter.convert(fstToBoConverted).to(int.class);
-		assertEquals(1, intConverted);
+		assertThat(intConverted).isOne();
 
 		fstToBoConverted = Boolean.valueOf(false);
 
 		booleanConverted = converter.convert(fstToBoConverted)
 				.to(boolean.class);
-		assertFalse(booleanConverted);
+		assertThat(booleanConverted).isFalse();
 
 		charConverted = converter.convert(fstToBoConverted).to(char.class);
-		assertEquals((char) 0, charConverted);
+		assertThat(charConverted).isEqualTo((char) 0);
 
 		intConverted = converter.convert(fstToBoConverted).to(int.class);
-		assertEquals(0, intConverted);
+		assertThat(intConverted).isZero();
 	}
 
 	/**
@@ -146,25 +144,25 @@ public class ScalarConversionComplianceTest {
 
 		boolean booleanConverted = converter.convert(fstToBoConverted)
 				.to(boolean.class);
-		assertTrue(booleanConverted);
+		assertThat(booleanConverted).isTrue();
 
 		char charConverted = converter.convert(fstToBoConverted).to(char.class);
-		assertEquals('A', charConverted);
+		assertThat(charConverted).isEqualTo('A');
 
 		int intConverted = converter.convert(fstToBoConverted).to(int.class);
-		assertEquals(65, intConverted);
+		assertThat(intConverted).isEqualTo(65);
 
 		fstToBoConverted = Character.valueOf((char) 0);
 
 		booleanConverted = converter.convert(fstToBoConverted)
 				.to(boolean.class);
-		assertFalse(booleanConverted);
+		assertThat(booleanConverted).isFalse();
 
 		charConverted = converter.convert(fstToBoConverted).to(char.class);
-		assertEquals(((char) 0), charConverted);
+		assertThat(charConverted).isEqualTo(((char) 0));
 
 		intConverted = converter.convert(fstToBoConverted).to(int.class);
-		assertEquals(0, intConverted);
+		assertThat(intConverted).isZero();
 	}
 	
 	/**
@@ -201,25 +199,25 @@ public class ScalarConversionComplianceTest {
 
 		boolean booleanConverted = converter.convert(fstToBoConverted)
 				.to(boolean.class);
-		assertTrue(booleanConverted);
+		assertThat(booleanConverted).isTrue();
 
 		char charConverted = converter.convert(fstToBoConverted).to(char.class);
-		assertEquals('A', charConverted);
+		assertThat(charConverted).isEqualTo('A');
 
 		int intConverted = converter.convert(fstToBoConverted).to(int.class);
-		assertEquals(65, intConverted);
+		assertThat(intConverted).isEqualTo(65);
 
 		fstToBoConverted = Integer.valueOf(0);
 
 		booleanConverted = converter.convert(fstToBoConverted)
 				.to(boolean.class);
-		assertFalse(booleanConverted);
+		assertThat(booleanConverted).isFalse();
 
 		charConverted = converter.convert(fstToBoConverted).to(char.class);
-		assertEquals(((char) 0), charConverted);
+		assertThat(charConverted).isEqualTo(((char) 0));
 
 		intConverted = converter.convert(fstToBoConverted).to(int.class);
-		assertEquals(0, intConverted);
+		assertThat(intConverted).isZero();
 	}
 
 	/**
@@ -253,13 +251,13 @@ public class ScalarConversionComplianceTest {
 		Converter converter = Converters.standardConverter();
 
 		boolean booleanConverted = converter.convert(null).to(boolean.class);
-		assertFalse(booleanConverted);
+		assertThat(booleanConverted).isFalse();
 
 		char charConverted = converter.convert(null).to(char.class);
-		assertEquals((char) 0, charConverted);
+		assertThat(charConverted).isEqualTo((char) 0);
 
 		int intConverted = converter.convert(null).to(int.class);
-		assertEquals(0, intConverted);
+		assertThat(intConverted).isZero();
 	}
 
 	/**
@@ -282,16 +280,16 @@ public class ScalarConversionComplianceTest {
 		Converter converter = Converters.standardConverter();
 		String stringConverted = converter.convert(fstToBeConverted)
 				.to(String.class);
-		assertEquals(((Boolean) fstToBeConverted).toString(), stringConverted);
+		assertThat(stringConverted).isEqualTo(((Boolean) fstToBeConverted).toString());
 
 		stringConverted = converter.convert(sndToBeConverted).to(String.class);
-		assertEquals(sndToBeConverted.toString(), stringConverted);
+		assertThat(stringConverted).isEqualTo(sndToBeConverted.toString());
 
 		stringConverted = converter.convert(thdToBeConverted).to(String.class);
-		assertEquals(((Double) thdToBeConverted).toString(), stringConverted);
+		assertThat(stringConverted).isEqualTo(((Double) thdToBeConverted).toString());
 
 		String nullConverted = converter.convert(null).to(String.class);
-		assertTrue(nullConverted == null);
+		assertThat(nullConverted).isNull();
 	}
 
 	/**
@@ -316,21 +314,19 @@ public class ScalarConversionComplianceTest {
 		ConversionComplianceTest.MyObject myObjectConverted = converter
 				.convert(fstToBeConverted)
 				.to(ConversionComplianceTest.MyObject.class);
-		assertEquals(fstToBeConverted, myObjectConverted.value);
+		assertThat(myObjectConverted.value).isEqualTo(fstToBeConverted);
 		ConversionComplianceTest.MyOtherObject myOtherObjectConverted = converter
 				.convert(fstToBeConverted)
 				.to(ConversionComplianceTest.MyOtherObject.class);
-		assertEquals(fstToBeConverted, myOtherObjectConverted.getValue());
+		assertThat(myOtherObjectConverted.getValue()).isEqualTo(fstToBeConverted);
 
 		int integerConverted = converter.convert(sndToBeConverted)
 				.to(int.class);
-		assertEquals(Integer.valueOf(sndToBeConverted).intValue(),
-				integerConverted);
+		assertThat(integerConverted).isEqualTo(Integer.valueOf(sndToBeConverted).intValue());
 
 		boolean booleanConverted = converter.convert(thdToBeConverted)
 				.to(boolean.class);
-		assertEquals(Boolean.valueOf(thdToBeConverted).booleanValue(),
-				booleanConverted);
+		assertThat(booleanConverted).isEqualTo(Boolean.valueOf(thdToBeConverted).booleanValue());
 	}
 
 	/**
@@ -410,72 +406,72 @@ public class ScalarConversionComplianceTest {
 
 		String emptyString = "";
 		char c = converter.convert(emptyString).to(char.class);
-		assertEquals(((char) 0), c);
+		assertThat(c).isEqualTo(((char) 0));
 
 		String string = "AEERECTF";
 		c = converter.convert(string).to(char.class);
-		assertEquals('A', c);
+		assertThat(c).isEqualTo('A');
 
 		// java 1.8 data structures
 		String duration = "PT10H";
 		Duration d = converter.convert(duration).to(Duration.class);
-		assertEquals(Duration.parse("PT10H"), d);
+		assertThat(d).isEqualTo(Duration.parse("PT10H"));
 
 		String instant = "2013-05-30T23:38:23.085Z";
 		Instant i = converter.convert(instant).to(Instant.class);
-		assertEquals(Instant.parse("2013-05-30T23:38:23.085Z"), i);
+		assertThat(i).isEqualTo(Instant.parse("2013-05-30T23:38:23.085Z"));
 
 		String localDateStr = "2013-11-24";
 		LocalDate localDate = LocalDate.parse(localDateStr);
 		LocalDate localDateConverted = converter.convert(localDateStr)
 				.to(LocalDate.class);
-		assertEquals(0, localDate.compareTo(localDateConverted));
+		assertThat(localDate.compareTo(localDateConverted)).isZero();
 
 		String localDateTimeStr = "2013-11-24T07:21:00";
 		LocalDateTime localDateTime = converter.convert(localDateTimeStr)
 				.to(LocalDateTime.class);
-		assertEquals(LocalDateTime.parse(localDateTimeStr), localDateTime);
+		assertThat(localDateTime).isEqualTo(LocalDateTime.parse(localDateTimeStr));
 
 		String localTimeStr = "07:21:00";
 		LocalTime localTime = converter.convert(localTimeStr)
 				.to(LocalTime.class);
-		assertEquals(LocalTime.parse(localTimeStr), localTime);
+		assertThat(localTime).isEqualTo(LocalTime.parse(localTimeStr));
 
 		String monthDay = "--11-24";
 		MonthDay md = converter.convert(monthDay).to(MonthDay.class);
-		assertEquals(MonthDay.parse(monthDay), md);
+		assertThat(md).isEqualTo(MonthDay.parse(monthDay));
 
 		String offsetTimeStr = "07:21:00+01:00";
 		OffsetTime offsetTime = converter.convert(offsetTimeStr)
 				.to(OffsetTime.class);
-		assertEquals(OffsetTime.parse(offsetTimeStr), offsetTime);
+		assertThat(offsetTime).isEqualTo(OffsetTime.parse(offsetTimeStr));
 
 		String offsetDateTimeStr = "2007-12-03T10:15:30+01:00";
 		OffsetDateTime offsetDateTime = converter.convert(offsetDateTimeStr)
 				.to(OffsetDateTime.class);
-		assertEquals(OffsetDateTime.parse(offsetDateTimeStr), offsetDateTime);
+		assertThat(offsetDateTime).isEqualTo(OffsetDateTime.parse(offsetDateTimeStr));
 
 		String year = "2017";
 		Year y = converter.convert(year).to(Year.class);
-		assertEquals(Year.parse(year), y);
+		assertThat(y).isEqualTo(Year.parse(year));
 
 		String yearMonth = "2017-11";
 		YearMonth ym = converter.convert(yearMonth).to(YearMonth.class);
-		assertEquals(YearMonth.parse(yearMonth), ym);
+		assertThat(ym).isEqualTo(YearMonth.parse(yearMonth));
 
 		String zonedDateTimeStr = "2013-11-24T07:21:00+01:00[Europe/Paris]";
 		ZonedDateTime zonedDateTime = converter.convert(zonedDateTimeStr)
 				.to(ZonedDateTime.class);
-		assertEquals(ZonedDateTime.parse(zonedDateTimeStr), zonedDateTime);
+		assertThat(zonedDateTime).isEqualTo(ZonedDateTime.parse(zonedDateTimeStr));
 
 		String uuidStr = "0-0-0-0-FF";
 		UUID convertedUUID = converter.convert(uuidStr).to(UUID.class);
-		assertEquals(UUID.fromString(uuidStr), convertedUUID);
+		assertThat(convertedUUID).isEqualTo(UUID.fromString(uuidStr));
 
 		String phoneNumber = "0456789899";
 		String pattern = "[0-9]{10}";
 		Pattern patternConverted = converter.convert(pattern).to(Pattern.class);
-		assertTrue(patternConverted.matcher(phoneNumber).matches());
+		assertThat(patternConverted.matcher(phoneNumber).matches()).isTrue();
 	}
 
 	/**
@@ -509,10 +505,10 @@ public class ScalarConversionComplianceTest {
 		long millisEpoch = date.getTime();
 
 		Date dateConverted = converter.convert(millisEpoch).to(Date.class);
-		assertEquals(date, dateConverted);
+		assertThat(dateConverted).isEqualTo(date);
 
 		long longConverted = converter.convert(date).to(long.class);
-		assertEquals(millisEpoch, longConverted);
+		assertThat(longConverted).isEqualTo(millisEpoch);
 
 		calendar.clear(Calendar.MILLISECOND);
 		date = calendar.getTime();
@@ -522,18 +518,18 @@ public class ScalarConversionComplianceTest {
 		String dateStr = df.format(date); // date.toInstant().toString();
 
 		dateConverted = converter.convert(dateStr).to(Date.class);
-		assertEquals(date, dateConverted);
+		assertThat(dateConverted).isEqualTo(date);
 
 		String stringConverted = converter.convert(date).to(String.class);
-		assertEquals(dateStr, stringConverted);
+		assertThat(stringConverted).isEqualTo(dateStr);
 
 		millisEpoch = date.getTime();
 		longConverted = converter.convert(calendar).to(long.class);
 
-		assertEquals(millisEpoch, longConverted);
+		assertThat(longConverted).isEqualTo(millisEpoch);
 		Calendar calendarConverted = converter.convert(millisEpoch)
 				.to(Calendar.class);
-		assertEquals(calendar.getTimeInMillis(), calendarConverted.getTimeInMillis());
+		assertThat(calendarConverted.getTimeInMillis()).isEqualTo(calendar.getTimeInMillis());
 	}
 
 	/**
@@ -569,24 +565,23 @@ public class ScalarConversionComplianceTest {
 		ConversionComplianceTest.Animal converted = converter
 				.convert(fstToBeConverted)
 				.to(ConversionComplianceTest.Animal.class);
-		assertEquals(ConversionComplianceTest.Animal.FROG, converted);
+		assertThat(converted).isEqualTo(ConversionComplianceTest.Animal.FROG);
 
 		String sndToBeConverted = "eagle";
 		converted = converter.convert(sndToBeConverted)
 				.to(ConversionComplianceTest.Animal.class);
-		assertEquals(ConversionComplianceTest.Animal.eAGLe, converted);
+		assertThat(converted).isEqualTo(ConversionComplianceTest.Animal.eAGLe);
 
 		double thdToBeConverted = 1;
 		converted = converter.convert(thdToBeConverted)
 				.to(ConversionComplianceTest.Animal.class);
-		assertEquals(ConversionComplianceTest.Animal.CROCODILE,
-				converted);
+		assertThat(converted).isEqualTo(ConversionComplianceTest.Animal.CROCODILE);
 
 		ConversionComplianceTest.MyObject obj = new ConversionComplianceTest.MyObject(
 				"CAT");
 		converted = converter.convert(obj)
 				.to(ConversionComplianceTest.Animal.class);
-		assertEquals(ConversionComplianceTest.Animal.CAT, converted);
+		assertThat(converted).isEqualTo(ConversionComplianceTest.Animal.CAT);
 	}
 
 
@@ -632,8 +627,8 @@ public class ScalarConversionComplianceTest {
 		Character characterConverted = converter.convert(fstToBeConverted)
 				.to(Character.class);
 
-		assertEquals(fstKey, longConverted);
-		assertEquals(characterValue, characterConverted);
+		assertThat(longConverted).isEqualTo(fstKey);
+		assertThat(characterConverted).isEqualTo(characterValue);
 
 		Long sndKey = 12l;
 		Long longValue = 20l;
@@ -645,7 +640,7 @@ public class ScalarConversionComplianceTest {
 
 		Map.Entry<Long,Long> sndToBeConverted = sndIterator.next();
 		longConverted = converter.convert(sndToBeConverted).to(Long.class);
-		assertEquals(sndKey, longConverted);
+		assertThat(longConverted).isEqualTo(sndKey);
 
 		fstKey = 0l;
 		String stringValue = "true";
@@ -660,7 +655,7 @@ public class ScalarConversionComplianceTest {
 		Boolean booleanConverted = converter.convert(fvToBeConverted)
 				.to(Boolean.class);
 
-		assertTrue(booleanConverted.booleanValue());
+		assertThat(booleanConverted.booleanValue()).isTrue();
 
 		String sthKey = "true";
 		stringValue = "false";
@@ -688,7 +683,7 @@ public class ScalarConversionComplianceTest {
 		sthIterator = sthMap.entrySet().iterator();
 		sthToBeConverted = sthIterator.next();
 		Date date = converter.convert(sthToBeConverted).to(Date.class);
-		assertEquals((date.getTime()/1000), (calendar.getTime().getTime()/1000));
+		assertThat((calendar.getTime().getTime()/1000)).isEqualTo((date.getTime()/1000));
 		
 		Number snKey = 1l;
 		Number numberValue = 0l;
@@ -699,7 +694,7 @@ public class ScalarConversionComplianceTest {
 		Map.Entry<Number,Number> snToBeConverted = snIterator.next();
 		booleanConverted = converter.convert(snToBeConverted).to(boolean.class);
 		//number to String = "1", then parsed to identify boolean value = false
-		assertFalse(booleanConverted.booleanValue());
+		assertThat(booleanConverted.booleanValue()).isFalse();
 
 		String tobeConverted = "map entry to be converted";
 
@@ -713,17 +708,11 @@ public class ScalarConversionComplianceTest {
 	@Test
 	public void testConvertBooleanToNumber() {
 		Converter converter = Converters.standardConverter();
-		assertEquals(Byte.valueOf((byte) 1),
-				converter.convert(Boolean.TRUE).to(Byte.class));
-		assertEquals(Short.valueOf((short) 1),
-				converter.convert(Boolean.TRUE).to(Short.class));
-		assertEquals(Integer.valueOf(1),
-				converter.convert(Boolean.TRUE).to(Integer.class));
-		assertEquals(Long.valueOf(1),
-				converter.convert(Boolean.TRUE).to(Long.class));
-		assertEquals(Float.valueOf(1.0f),
-				converter.convert(Boolean.TRUE).to(Float.class));
-		assertEquals(Double.valueOf(1.0d),
-				converter.convert(Boolean.TRUE).to(Double.class));
+		assertThat(converter.convert(Boolean.TRUE).to(Byte.class)).isEqualTo(Byte.valueOf((byte) 1));
+		assertThat(converter.convert(Boolean.TRUE).to(Short.class)).isEqualTo(Short.valueOf((short) 1));
+		assertThat(converter.convert(Boolean.TRUE).to(Integer.class)).isEqualTo(Integer.valueOf(1));
+		assertThat(converter.convert(Boolean.TRUE).to(Long.class)).isEqualTo(Long.valueOf(1));
+		assertThat(converter.convert(Boolean.TRUE).to(Float.class)).isEqualTo(Float.valueOf(1.0f));
+		assertThat(converter.convert(Boolean.TRUE).to(Double.class)).isEqualTo(Double.valueOf(1.0d));
 	}
 }

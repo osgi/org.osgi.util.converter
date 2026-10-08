@@ -16,10 +16,10 @@
  */
 package org.osgi.test.cases.converter.felix;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static java.lang.Long.valueOf;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,23 +38,23 @@ import org.osgi.util.converter.TypeReference;
 public class ConverterCollectionsTest {
 	@Test
 	public void testLiveBackingList() {
-		List<Integer> l = Arrays.asList(9, 8, 7);
+		List<Integer> l = asList(9, 8, 7);
 		Converter converter = Converters.standardConverter();
 		List<Short> sl = converter.convert(l)
 				.view()
 				.to(new TypeReference<List<Short>>() {
 				});
 
-		assertEquals(Short.valueOf((short) 9), sl.get(0));
-		assertEquals(Short.valueOf((short) 8), sl.get(1));
-		assertEquals(Short.valueOf((short) 7), sl.get(2));
-		assertEquals(3, sl.size());
+		assertThat(sl.get(0)).isEqualTo(Short.valueOf((short) 9));
+		assertThat(sl.get(1)).isEqualTo(Short.valueOf((short) 8));
+		assertThat(sl.get(2)).isEqualTo(Short.valueOf((short) 7));
+		assertThat(sl).hasSize(3);
 
 		l.set(1, 11);
-		assertEquals(Short.valueOf((short) 9), sl.get(0));
-		assertEquals(Short.valueOf((short) 11), sl.get(1));
-		assertEquals(Short.valueOf((short) 7), sl.get(2));
-		assertEquals(3, sl.size());
+		assertThat(sl.get(0)).isEqualTo(Short.valueOf((short) 9));
+		assertThat(sl.get(1)).isEqualTo(Short.valueOf((short) 11));
+		assertThat(sl.get(2)).isEqualTo(Short.valueOf((short) 7));
+		assertThat(sl).hasSize(3);
 
 		List<Short> sl2 = converter.convert(l)
 				.view()
@@ -66,11 +66,11 @@ public class ConverterCollectionsTest {
 				});
 		sl3.add(Short.valueOf((short) 6));
 
-		assertEquals(sl.hashCode(), sl2.hashCode());
-		assertTrue(sl.hashCode() != sl3.hashCode());
+		assertThat(sl2).hasSameHashCodeAs(sl);
+		assertThat(sl.hashCode()).isNotEqualTo(sl3.hashCode());
 
-		assertEquals(sl, sl2);
-		assertFalse(sl.equals(sl3));
+		assertThat(sl2).isEqualTo(sl);
+		assertThat(sl.equals(sl3)).isFalse();
 	}
 
 	@Test
@@ -85,9 +85,9 @@ public class ConverterCollectionsTest {
 				.to(new TypeReference<List<Integer>>() {
 				});
 		a[0] = 7l;
-		l.addAll(Arrays.asList(7, 6));
+		l.addAll(asList(7, 6));
 		a[0] = 1l;
-		assertEquals(Arrays.asList(7, 8, 7, 6), l);
+		assertThat(l).isEqualTo(Arrays.asList(7, 8, 7, 6));
 	}
 
 	@Test
@@ -101,9 +101,9 @@ public class ConverterCollectionsTest {
 				.view()
 				.to(new TypeReference<List<Integer>>() {
 				});
-		l.addAll(1, Arrays.asList(7, 6));
+		l.addAll(1, asList(7, 6));
 		a[0] = 1l;
-		assertEquals(Arrays.asList(9, 7, 6, 8), l);
+		assertThat(l).isEqualTo(Arrays.asList(9, 7, 6, 8));
 	}
 
 	@Test
@@ -119,7 +119,7 @@ public class ConverterCollectionsTest {
 				});
 		l.removeAll(Collections.singleton(8));
 		a[0] = 1l;
-		assertEquals(Collections.singletonList(9), l);
+		assertThat(l).isEqualTo(Collections.singletonList(9));
 	}
 
 	@Test
@@ -135,7 +135,7 @@ public class ConverterCollectionsTest {
 				});
 		l.retainAll(Collections.singleton(8));
 		a[1] = 1l;
-		assertEquals(Collections.singletonList(8), l);
+		assertThat(l).isEqualTo(Collections.singletonList(8));
 	}
 
 	@Test
@@ -152,7 +152,7 @@ public class ConverterCollectionsTest {
 		l.clear();
 		l.add(10);
 		a[0] = 1l;
-		assertEquals(Collections.singletonList(10), l);
+		assertThat(l).isEqualTo(Collections.singletonList(10));
 	}
 
 	@Test
@@ -168,7 +168,7 @@ public class ConverterCollectionsTest {
 				});
 		l.add(10);
 		a[0] = 1l;
-		assertEquals(Arrays.asList(9, 8, 10), l);
+		assertThat(l).isEqualTo(Arrays.asList(9, 8, 10));
 	}
 
 	@Test
@@ -184,7 +184,7 @@ public class ConverterCollectionsTest {
 				});
 		l.add(0, 10);
 		a[0] = 1l;
-		assertEquals(Arrays.asList(10, 9, 8), l);
+		assertThat(l).isEqualTo(Arrays.asList(10, 9, 8));
 	}
 
 	@Test
@@ -198,43 +198,43 @@ public class ConverterCollectionsTest {
 				.view()
 				.to(new TypeReference<List<Integer>>() {
 				});
-		assertEquals(Integer.valueOf(8), l.remove(1));
+		assertThat(l.remove(1)).isEqualTo(Integer.valueOf(8));
 		a[0] = 1l;
-		assertEquals(Arrays.asList(9), l);
+		assertThat(l).isEqualTo(Arrays.asList(9));
 	}
 
 	@Test
 	public void testLiveBackingCollection() {
-		Set<String> s = new LinkedHashSet<>(Arrays.asList("yo", "yo", "ma"));
+		Set<String> s = new LinkedHashSet<>(asList("yo", "yo", "ma"));
 		Converter converter = Converters.standardConverter();
 		List<String> sl = converter.convert(s)
 				.view()
 				.to(new TypeReference<List<String>>() {
 				});
 
-		assertEquals("yo", sl.get(0));
-		assertEquals("ma", sl.get(1));
-		assertEquals(2, sl.size());
+		assertThat(sl.get(0)).isEqualTo("yo");
+		assertThat(sl.get(1)).isEqualTo("ma");
+		assertThat(sl).hasSize(2);
 
 		s.add("ha");
 		s.add("yo");
-		assertEquals("yo", sl.get(0));
-		assertEquals("ma", sl.get(1));
-		assertEquals("ha", sl.get(2));
-		assertEquals(3, sl.size());
-		assertFalse(sl.isEmpty());
+		assertThat(sl.get(0)).isEqualTo("yo");
+		assertThat(sl.get(1)).isEqualTo("ma");
+		assertThat(sl.get(2)).isEqualTo("ha");
+		assertThat(sl).hasSize(3);
+		assertThat(sl).isNotEmpty();
 
-		assertTrue(sl.contains("ma"));
-		assertFalse(sl.contains("na"));
+		assertThat(sl.contains("ma")).isTrue();
+		assertThat(sl.contains("na")).isFalse();
 
 		String[] sa = sl.toArray(new String[] {});
-		assertEquals(3, sa.length);
-		assertEquals("yo", sa[0]);
-		assertEquals("ma", sa[1]);
-		assertEquals("ha", sa[2]);
+		assertThat(sa).hasSize(3);
+		assertThat(sa[0]).isEqualTo("yo");
+		assertThat(sa[1]).isEqualTo("ma");
+		assertThat(sa[2]).isEqualTo("ha");
 
-		assertTrue(sl.containsAll(Arrays.asList("ma", "yo")));
-		assertFalse(sl.containsAll(Arrays.asList("xxx")));
+		assertThat(sl.containsAll(Arrays.asList("ma", "yo"))).isTrue();
+		assertThat(sl.containsAll(Arrays.asList("xxx"))).isFalse();
 	}
 
 	@Test
@@ -244,8 +244,8 @@ public class ConverterCollectionsTest {
 				.convert(s)
 				.view()
 				.to(Collection.class);
-		assertTrue(l.isEmpty());
-		assertEquals(0, l.size());
+		assertThat(l).isEmpty();
+		assertThat(l.size()).isZero();
 	}
 
 	@Test
@@ -257,20 +257,20 @@ public class ConverterCollectionsTest {
 
 		@SuppressWarnings("rawtypes")
 		List l = converter.convert(arr).view().to(List.class);
-		assertEquals(2, l.size());
-		assertFalse(l.isEmpty());
-		assertEquals(1, l.get(0));
-		assertEquals(2, l.get(1));
+		assertThat(l).hasSize(2);
+		assertThat(l).isNotEmpty();
+		assertThat(l.get(0)).isEqualTo(1);
+		assertThat(l.get(1)).isEqualTo(2);
 
-		assertTrue(l.contains(1));
-		assertTrue(l.contains(2));
-		assertFalse(l.contains(3));
-		assertFalse(l.contains(0));
+		assertThat(l.contains(1)).isTrue();
+		assertThat(l.contains(2)).isTrue();
+		assertThat(l.contains(3)).isFalse();
+		assertThat(l.contains(0)).isFalse();
 
 		arr[0] = -3;
 		arr[1] = 3;
-		assertEquals(-3, l.get(0));
-		assertEquals(3, l.get(1));
+		assertThat(l.get(0)).isEqualTo(-3);
+		assertThat(l.get(1)).isEqualTo(3);
 	}
 
 	@Test
@@ -282,24 +282,24 @@ public class ConverterCollectionsTest {
 				.convert(oa)
 				.view()
 				.to(List.class);
-		assertTrue(l.contains("hi"));
-		assertTrue(l.contains(null));
-		assertTrue(l.contains('x'));
-		assertFalse(l.containsAll(Arrays.asList('x', 7)));
-		assertTrue(l.containsAll(Arrays.asList('x', null, null, "hi", "hi")));
-		assertEquals(0, l.indexOf("hi"));
-		assertEquals(1, l.indexOf(null));
-		assertEquals(2, l.indexOf('x'));
-		assertEquals(-1, l.indexOf("test"));
+		assertThat(l.contains("hi")).isTrue();
+		assertThat(l.contains(null)).isTrue();
+		assertThat(l.contains('x')).isTrue();
+		assertThat(l.containsAll(Arrays.asList('x', 7))).isFalse();
+		assertThat(l.containsAll(Arrays.asList('x', null, null, "hi", "hi"))).isTrue();
+		assertThat(l.indexOf("hi")).isZero();
+		assertThat(l.indexOf(null)).isOne();
+		assertThat(l.indexOf('x')).isEqualTo(2);
+		assertThat(l.indexOf("test")).isEqualTo(-1);
 
 		List< ? > l0 = l.subList(1, 1);
-		assertEquals(0, l0.size());
+		assertThat(l0.size()).isZero();
 		List< ? > l1 = l.subList(1, 2);
-		assertEquals(Arrays.asList((Object) null), l1);
+		assertThat(l1).isEqualTo(Arrays.asList((Object) null));
 		List< ? > l2 = l.subList(1, 3);
-		assertEquals(Arrays.asList(null, 'x'), l2);
+		assertThat(l2).isEqualTo(Arrays.asList(null, 'x'));
 		List< ? > l3 = l.subList(0, 2);
-		assertEquals(Arrays.asList("hi", null), l3);
+		assertThat(l3).isEqualTo(asList("hi", null));
 	}
 
 	@SuppressWarnings("unlikely-arg-type")
@@ -316,40 +316,40 @@ public class ConverterCollectionsTest {
 				});
 		Object[] oa1 = l.toArray();
 		String[] sa1 = l.toArray(new String[] {});
-		assertEquals("yo", sa1[0]);
-		assertEquals("ho", sa1[1]);
-		assertEquals("yo", sa1[2]);
-		assertNull(sa1[3]);
-		assertEquals("yo", sa1[4]);
-		assertEquals(oa1[0], sa1[0]);
-		assertEquals(oa1[1], sa1[1]);
-		assertEquals(oa1[2], sa1[2]);
-		assertEquals(oa1[3], sa1[3]);
-		assertEquals(oa1[4], sa1[4]);
-		assertEquals(5, oa1.length);
-		assertEquals(5, sa1.length);
+		assertThat(sa1[0]).isEqualTo("yo");
+		assertThat(sa1[1]).isEqualTo("ho");
+		assertThat(sa1[2]).isEqualTo("yo");
+		assertThat(sa1[3]).isNull();
+		assertThat(sa1[4]).isEqualTo("yo");
+		assertThat(sa1[0]).isEqualTo(oa1[0]);
+		assertThat(sa1[1]).isEqualTo(oa1[1]);
+		assertThat(sa1[2]).isEqualTo(oa1[2]);
+		assertThat(sa1[3]).isEqualTo(oa1[3]);
+		assertThat(sa1[4]).isEqualTo(oa1[4]);
+		assertThat(oa1).hasSize(5);
+		assertThat(sa1).hasSize(5);
 
 		String[] sa2 = l.toArray(new String[6]);
-		assertEquals(oa1[0], sa2[0]);
-		assertEquals(oa1[1], sa2[1]);
-		assertEquals(oa1[2], sa2[2]);
-		assertEquals(oa1[3], sa2[3]);
-		assertEquals(oa1[4], sa2[4]);
-		assertNull(sa2[5]);
-		assertEquals(6, sa2.length);
+		assertThat(sa2[0]).isEqualTo(oa1[0]);
+		assertThat(sa2[1]).isEqualTo(oa1[1]);
+		assertThat(sa2[2]).isEqualTo(oa1[2]);
+		assertThat(sa2[3]).isEqualTo(oa1[3]);
+		assertThat(sa2[4]).isEqualTo(oa1[4]);
+		assertThat(sa2[5]).isNull();
+		assertThat(sa2).hasSize(6);
 
-		assertEquals(4, l.lastIndexOf("yo"));
-		assertEquals(1, l.lastIndexOf("ho"));
-		assertEquals(3, l.lastIndexOf(null));
-		assertEquals(-1, l.lastIndexOf(Integer.valueOf(123)));
+		assertThat(l.lastIndexOf("yo")).isEqualTo(4);
+		assertThat(l.lastIndexOf("ho")).isOne();
+		assertThat(l.lastIndexOf(null)).isEqualTo(3);
+		assertThat(l.lastIndexOf(Integer.valueOf(123))).isEqualTo(-1);
 	}
 
 	@Test
 	public void testLiveBackingArray0() {
 		Converter converter = Converters.standardConverter();
 		List< ? > l = converter.convert(new double[] {}).view().to(List.class);
-		assertTrue(l.isEmpty());
-		assertEquals(0, l.size());
+		assertThat(l).isEmpty();
+		assertThat(l.size()).isZero();
 	}
 
 	@Test
@@ -361,13 +361,13 @@ public class ConverterCollectionsTest {
 
 		@SuppressWarnings("rawtypes")
 		List l = converter.convert(arr).view().to(List.class);
-		assertEquals(1, l.get(0));
-		assertEquals(2, l.get(1));
+		assertThat(l.get(0)).isEqualTo(1);
+		assertThat(l.get(1)).isEqualTo(2);
 
 		arr[0] = -3;
 		arr[1] = 3;
-		assertEquals(-3, l.get(0));
-		assertEquals(3, l.get(1));
+		assertThat(l.get(0)).isEqualTo(-3);
+		assertThat(l.get(1)).isEqualTo(3);
 	}
 
 	@Test
@@ -381,26 +381,22 @@ public class ConverterCollectionsTest {
 				.view()
 				.to(new TypeReference<List<Long>>() {
 				});
-		assertTrue(l.contains(Long.valueOf(2)));
-		assertTrue(
-				l.containsAll(Arrays.asList(Long.valueOf(2), Long.valueOf(1))));
-		assertFalse(l.contains(Long.valueOf(3)));
-		assertFalse(
-				l.containsAll(Arrays.asList(Long.valueOf(2), Long.valueOf(3))));
+		assertThat(l.contains(Long.valueOf(2))).isTrue();
+		assertThat(l.containsAll(Arrays.asList(Long.valueOf(2), Long.valueOf(1)))).isTrue();
+		assertThat(l.contains(Long.valueOf(3))).isFalse();
+		assertThat(l.containsAll(Arrays.asList(Long.valueOf(2), Long.valueOf(3)))).isFalse();
 
 		arr[0] = Integer.valueOf(3);
-		assertTrue(l.contains(Long.valueOf(2)));
-		assertFalse(
-				l.containsAll(Arrays.asList(Long.valueOf(2), Long.valueOf(1))));
-		assertTrue(l.contains(Long.valueOf(3)));
-		assertTrue(
-				l.containsAll(Arrays.asList(Long.valueOf(2), Long.valueOf(3))));
+		assertThat(l.contains(Long.valueOf(2))).isTrue();
+		assertThat(l.containsAll(Arrays.asList(Long.valueOf(2), Long.valueOf(1)))).isFalse();
+		assertThat(l.contains(Long.valueOf(3))).isTrue();
+		assertThat(l.containsAll(Arrays.asList(Long.valueOf(2), Long.valueOf(3)))).isTrue();
 
-		l.add(Long.valueOf(4));
-		l.add(Long.valueOf(5));
+		l.add(valueOf(4));
+		l.add(valueOf(5));
 		arr[0] = Integer.valueOf(1);
-		assertTrue(l.containsAll(Arrays.asList(Long.valueOf(2), Long.valueOf(3),
-				Long.valueOf(4), Long.valueOf(5))));
+		assertThat(l.containsAll(Arrays.asList(Long.valueOf(2), Long.valueOf(3),
+				Long.valueOf(4), Long.valueOf(5)))).isTrue();
 	}
 
 	@Test
@@ -414,9 +410,9 @@ public class ConverterCollectionsTest {
 				.view()
 				.to(new TypeReference<List<Long>>() {
 				});
-		assertTrue(l.remove(Long.valueOf(1)));
+		assertThat(l.remove(valueOf(1))).isTrue();
 		arr[1] = Integer.valueOf(3);
-		assertEquals(Collections.singletonList(Long.valueOf(2)), l);
+		assertThat(l).isEqualTo(Collections.singletonList(Long.valueOf(2)));
 	}
 
 	@Test
@@ -430,12 +426,12 @@ public class ConverterCollectionsTest {
 				.view()
 				.to(new TypeReference<Set<Character>>() {
 				});
-		assertTrue(s.containsAll(Arrays.asList(Character.valueOf('a'),
-				Character.valueOf('b'), Character.valueOf('c'))));
+		assertThat(s.containsAll(Arrays.asList(Character.valueOf('a'),
+				Character.valueOf('b'), Character.valueOf('c')))).isTrue();
 
 		ca[0] = 'd';
-		assertTrue(s.containsAll(Arrays.asList(Character.valueOf('b'),
-				Character.valueOf('c'), Character.valueOf('d'))));
+		assertThat(s.containsAll(Arrays.asList(Character.valueOf('b'),
+				Character.valueOf('c'), Character.valueOf('d')))).isTrue();
 	}
 
 	@Test
@@ -450,35 +446,35 @@ public class ConverterCollectionsTest {
 				});
 		Float f1 = Float.valueOf(3.1415f);
 		Float f2 = Float.valueOf(1.0f);
-		assertEquals(1, s.size());
-		assertFalse(s.isEmpty());
-		assertTrue(s.contains(f1));
-		assertFalse(s.contains(f2));
-		assertEquals(f1, s.iterator().next());
+		assertThat(s.size()).isEqualTo(1);
+		assertThat(s.isEmpty()).isFalse();
+		assertThat(s.contains(f1)).isTrue();
+		assertThat(s.contains(f2)).isFalse();
+		assertThat(s.iterator().next()).isEqualTo(f1);
 
 		l.set(0, null);
-		assertEquals(1, s.size());
-		assertFalse(s.isEmpty());
-		assertTrue(s.contains(null));
-		assertFalse(s.contains(f2));
-		assertFalse(s.contains(f1));
-		assertNull(s.iterator().next());
+		assertThat(s.size()).isEqualTo(1);
+		assertThat(s.isEmpty()).isFalse();
+		assertThat(s.contains(null)).isTrue();
+		assertThat(s.contains(f2)).isFalse();
+		assertThat(s.contains(f1)).isFalse();
+		assertThat(s.iterator().next()).isNull();
 
 		Float f3 = Float.valueOf(2.7182f);
 		s.add(f3);
-		assertEquals(1, l.size(), "Original should not be modified");
+		assertThat(l).as("Original should not be modified").hasSize(1);
 		l.set(0, -1.0);
-		assertEquals(2, s.size());
-		assertTrue(s.contains(null));
-		assertTrue(s.contains(f3));
-		assertFalse(s.contains(f2));
-		assertFalse(s.contains(f1));
+		assertThat(s.size()).isEqualTo(2);
+		assertThat(s.contains(null)).isTrue();
+		assertThat(s.contains(f3)).isTrue();
+		assertThat(s.contains(f2)).isFalse();
+		assertThat(s.contains(f1)).isFalse();
 	}
 
 	@Test
 	public void testLiveBackingSet0() {
 		List<String> l = new ArrayList<>();
-		l.addAll(Arrays.asList("hi", "there"));
+		l.addAll(asList("hi", "there"));
 
 		Set<String> s = Converters.standardConverter()
 				.convert(l)
@@ -488,11 +484,10 @@ public class ConverterCollectionsTest {
 		l.set(0, "ho");
 
 		String[] sa = s.toArray(new String[1]);
-		assertEquals(Arrays.asList("ho", "there"), Arrays.asList(sa));
+		assertThat(Arrays.asList(sa)).isEqualTo(Arrays.asList("ho", "there"));
 
 		String[] sa2 = s.toArray(new String[4]);
-		assertEquals(Arrays.asList("ho", "there", null, null),
-				Arrays.asList(sa2));
+		assertThat(Arrays.asList(sa2)).isEqualTo(Arrays.asList("ho", "there", null, null));
 
 		Set<String> s2 = Converters.standardConverter()
 				.convert(l)
@@ -505,35 +500,34 @@ public class ConverterCollectionsTest {
 				.to(new TypeReference<Set<String>>() {
 				});
 		s3.add("!!");
-		assertEquals(s.hashCode(), s2.hashCode());
-		assertFalse(s.hashCode() == s3.hashCode());
+		assertThat(s2).hasSameHashCodeAs(s);
+		assertThat(s.hashCode()).isNotEqualTo(s3.hashCode());
 
-		assertTrue(s.equals(s2));
-		assertFalse(s.equals(s3));
+		assertThat(s.equals(s2)).isTrue();
+		assertThat(s.equals(s3)).isFalse();
 	}
 
 	@Test
 	public void testLiveBackingSet1() {
 		List<String> l = new ArrayList<>();
-		l.addAll(Arrays.asList("hi", "there"));
+		l.addAll(asList("hi", "there"));
 
 		Set<CharSequence> s = Converters.standardConverter()
 				.convert(l)
 				.view()
 				.to(new TypeReference<Set<CharSequence>>() {
 				});
-		assertTrue(s.containsAll(Arrays.asList("there", "hi")));
+		assertThat(s.containsAll(Arrays.asList("there", "hi"))).isTrue();
 		s.clear();
-		assertEquals(Arrays.asList("hi", "there"), l,
-				"Original should not be modified");
-		assertEquals(0, s.size());
-		assertTrue(s.isEmpty());
+		assertThat(l).as("Original should not be modified").isEqualTo(asList("hi", "there"));
+		assertThat(s).hasSize(0);
+		assertThat(s).isEmpty();
 	}
 
 	@Test
 	public void testLiveBackingSet2() {
 		List<String> l = new ArrayList<>();
-		l.addAll(Arrays.asList("hi", "there"));
+		l.addAll(asList("hi", "there"));
 
 		Set<CharSequence> s = Converters.standardConverter()
 				.convert(l)
@@ -542,49 +536,49 @@ public class ConverterCollectionsTest {
 				});
 		s.remove("yo");
 		l.set(0, "xxx"); // Should not have an effect since 'remove' was called
-		assertTrue(s.containsAll(Arrays.asList("there", "hi")));
+		assertThat(s.containsAll(Arrays.asList("there", "hi"))).isTrue();
 
 		s.remove("hi");
-		assertEquals(Collections.singleton("there"), s);
+		assertThat(s).isEqualTo(Collections.singleton("there"));
 	}
 
 	@Test
 	public void testLiveBackingSet3() {
 		List<String> l = new ArrayList<>();
-		l.addAll(Arrays.asList("hi", "there"));
+		l.addAll(asList("hi", "there"));
 
 		Set<CharSequence> s = Converters.standardConverter()
 				.convert(l)
 				.view()
 				.to(new TypeReference<Set<CharSequence>>() {
 				});
-		assertFalse(s.addAll(Collections.singleton("there")));
-		assertTrue(s.addAll(Arrays.asList("there", "!!")));
+		assertThat(s.addAll(singleton("there"))).isFalse();
+		assertThat(s.addAll(asList("there", "!!"))).isTrue();
 		l.remove("hi");
-		assertTrue(s.containsAll(Arrays.asList("there", "hi", "!!")));
+		assertThat(s.containsAll(Arrays.asList("there", "hi", "!!"))).isTrue();
 	}
 
 	@Test
 	public void testLiveBackingSet4() {
 		List<String> l = new ArrayList<>();
-		l.addAll(Arrays.asList("hi", "there"));
+		l.addAll(asList("hi", "there"));
 
 		Set<CharSequence> s = Converters.standardConverter()
 				.convert(l)
 				.view()
 				.to(new TypeReference<Set<CharSequence>>() {
 				});
-		assertFalse(s.removeAll(Collections.singleton("yo")));
+		assertThat(s.removeAll(singleton("yo"))).isFalse();
 		l.remove("hi");
-		assertTrue(s.containsAll(Arrays.asList("there", "hi")));
-		assertTrue(s.removeAll(Arrays.asList("there", "hi")));
-		assertEquals(0, s.size());
+		assertThat(s.containsAll(Arrays.asList("there", "hi"))).isTrue();
+		assertThat(s.removeAll(Arrays.asList("there", "hi"))).isTrue();
+		assertThat(s.size()).isEqualTo(0);
 	}
 
 	@Test
 	public void testLiveBackingSet5() {
 		List<String> l = new ArrayList<>();
-		l.addAll(Arrays.asList("hi", "there"));
+		l.addAll(asList("hi", "there"));
 
 		Set<CharSequence> s = Converters.standardConverter()
 				.convert(l)
@@ -592,7 +586,7 @@ public class ConverterCollectionsTest {
 				.to(new TypeReference<Set<CharSequence>>() {
 				});
 
-		assertTrue(s.retainAll(Arrays.asList("hi", "!!")));
-		assertEquals(new HashSet<>(Collections.singleton("hi")), s);
+		assertThat(s.retainAll(Arrays.asList("hi", "!!"))).isTrue();
+		assertThat(s).isEqualTo(new HashSet<>(Collections.singleton("hi")));
 	}
 }
