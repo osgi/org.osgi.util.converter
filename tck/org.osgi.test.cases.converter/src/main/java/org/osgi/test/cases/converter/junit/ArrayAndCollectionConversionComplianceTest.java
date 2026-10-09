@@ -18,12 +18,9 @@
 
 package org.osgi.test.cases.converter.junit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.within;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,18 +66,18 @@ public class ArrayAndCollectionConversionComplianceTest {
 		String scalar = "225";
 		Set<Long> converted = converter.convert(scalar)
 				.to(new TypeReference<Set<Long>>() {});
-		assertEquals(1, converted.size());
-		assertTrue(Long.valueOf(225).equals(converted.iterator().next()));
+		assertThat(converted).hasSize(1);
+		assertThat(Long.valueOf(225)).isEqualTo(converted.iterator().next());
 
 		char[] scalarCharacters = converter.convert(scalar).to(char[].class);
-		assertEquals(3, scalarCharacters.length);
-		assertEquals('2', scalarCharacters[0]);
-		assertEquals('2', scalarCharacters[1]);
-		assertEquals('5', scalarCharacters[2]);
+		assertThat(scalarCharacters).hasSize(3);
+		assertThat(scalarCharacters[0]).isEqualTo('2');
+		assertThat(scalarCharacters[1]).isEqualTo('2');
+		assertThat(scalarCharacters[2]).isEqualTo('5');
 
 		converted = converter.convert(null)
 				.to(new TypeReference<Set<Long>>() {});
-		assertTrue(converted.isEmpty());
+		assertThat(converted).isEmpty();
 	}
 	
 	/**
@@ -107,16 +104,16 @@ public class ArrayAndCollectionConversionComplianceTest {
 		List<Long> longList = Arrays.asList(5l, 8l, 10l);
 
 		Long converted = converter.convert(longList).to(Long.class);
-		assertNotNull(converted);
-		assertEquals(5l, converted.longValue());
+		assertThat(converted).isNotNull();
+		assertThat(converted.longValue()).isEqualTo(5l);
 
 		longList = new ArrayList<Long>();
 		converted = converter.convert(longList).to(Long.class);
-		assertNull(converted);
+		assertThat(converted).isNull();
 		
 		String resultString = "chars array";
 		String convertedString = converter.convert(resultString.toCharArray()).to(String.class);
-		assertEquals(resultString, convertedString);
+		assertThat(convertedString).isEqualTo(resultString);
 		
 		ConverterBuilder cb = converter.newConverterBuilder();
 		cb.rule(new Rule<int[], String>(new Function<int[],String>(){
@@ -146,11 +143,11 @@ public class ArrayAndCollectionConversionComplianceTest {
 		String s2 = c.convert(new int[] {
 				1, 2
 		}).to(String.class);
-		assertEquals("1,2", s2);
+		assertThat(s2).isEqualTo("1,2");
 		int[] sa = c.convert("1,2").to(int[].class);
-		assertEquals(2, sa.length);
-		assertEquals(1, sa[0]);
-		assertEquals(2, sa[1]);
+		assertThat(sa).hasSize(2);
+		assertThat(sa[0]).isOne();
+		assertThat(sa[1]).isEqualTo(2);
 		
 	}
 
@@ -251,24 +248,24 @@ public class ArrayAndCollectionConversionComplianceTest {
 
 		Iterator<Long> iterator = converted.iterator();
 		for (int index = 0; index < 3; index++) {
-			assertEquals(backingObject[index], iterator.next().intValue());
+			assertThat(iterator.next().intValue()).isEqualTo(backingObject[index]);
 		}
-		assertFalse(iterator.hasNext());
+		assertThat(iterator).isExhausted();
 
 		backingObject[2] = 5;
 		iterator = converted.iterator();
 
 		for (int index = 0; index < 3; index++) {
-			assertEquals(backingObject[index], iterator.next().intValue());
+			assertThat(iterator.next().intValue()).isEqualTo(backingObject[index]);
 		}
-		assertFalse(iterator.hasNext());
+		assertThat(iterator).isExhausted();
 		converted.set(2, 8l);
 
 		iterator = converted.iterator();
-		assertEquals(Long.valueOf(1l), iterator.next());
-		assertEquals(Long.valueOf(2l), iterator.next());
-		assertEquals(Long.valueOf(8l), iterator.next());
-		assertFalse(iterator.hasNext());
+		assertThat(iterator.next()).isEqualTo(Long.valueOf(1l));
+		assertThat(iterator.next()).isEqualTo(Long.valueOf(2l));
+		assertThat(iterator.next()).isEqualTo(Long.valueOf(8l));
+		assertThat(iterator).isExhausted();
 
 		// preserve iteration order
 		int[] arr = new int[] {
@@ -279,10 +276,10 @@ public class ArrayAndCollectionConversionComplianceTest {
 
 		// int n = 0;
 		Iterator<Double> resultIterator = result.iterator();
-		assertEquals(2.0, resultIterator.next(), 0.00001);
-		assertEquals(3.0, resultIterator.next(), 0.00001);
-		assertEquals(1.0, resultIterator.next(), 0.00001);
-		assertFalse(resultIterator.hasNext());
+		assertThat(resultIterator.next()).isCloseTo(2.0, within(0.00001));
+		assertThat(resultIterator.next()).isCloseTo(3.0, within(0.00001));
+		assertThat(resultIterator.next()).isCloseTo(1.0, within(0.00001));
+		assertThat(resultIterator).isExhausted();
 	}
 
 	/**

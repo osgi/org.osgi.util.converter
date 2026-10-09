@@ -16,17 +16,10 @@
  */
 package org.osgi.test.cases.converter.felix;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -123,126 +116,110 @@ public class ConverterTest {
 		Converter c = Converters.standardConverter();
 		String s = c.convert(v).to(String.class);
 		Version v2 = c.convert(s).to(Version.class);
-		assertEquals(v, v2);
+		assertThat(v2).isEqualTo(v);
 	}
 
 	@Test
 	public void testSimpleConversions() {
 		// Conversions to String
-		assertEquals("abc", converter.convert("abc").to(String.class));
-		assertEquals("true", converter.convert(Boolean.TRUE).to(String.class));
-		assertEquals("c", converter.convert('c').to(String.class));
-		assertEquals("123", converter.convert(123).to(String.class));
-		assertEquals("" + Long.MAX_VALUE,
-				converter.convert(Long.MAX_VALUE).to(String.class));
-		assertEquals("12.3", converter.convert(12.3f).to(String.class));
-		assertEquals("12.345", converter.convert(12.345d).to(String.class));
-		assertNull(converter.convert(null).to(String.class));
-		assertNull(converter.convert(Collections.emptyList()).to(String.class));
+		assertThat(converter.convert("abc").to(String.class)).isEqualTo("abc");
+		assertThat(converter.convert(Boolean.TRUE).to(String.class)).isEqualTo("true");
+		assertThat(converter.convert('c').to(String.class)).isEqualTo("c");
+		assertThat(converter.convert(123).to(String.class)).isEqualTo("123");
+		assertThat(converter.convert(Long.MAX_VALUE).to(String.class)).isEqualTo("" + Long.MAX_VALUE);
+		assertThat(converter.convert(12.3f).to(String.class)).isEqualTo("12.3");
+		assertThat(converter.convert(12.345d).to(String.class)).isEqualTo("12.345");
+		assertThat(converter.convert(null).to(String.class)).isNull();
+		assertThat(converter.convert(Collections.emptyList()).to(String.class)).isNull();
 
 		String bistr = "999999999999999999999"; // more than Long.MAX_VALUE
-		assertEquals(bistr,
-				converter.convert(new BigInteger(bistr)).to(String.class));
+		assertThat(converter.convert(new BigInteger(bistr)).to(String.class)).isEqualTo(bistr);
 
 		// Conversions to boolean
-		assertTrue(converter.convert("true").to(boolean.class));
-		assertTrue(converter.convert("TRUE").to(boolean.class));
-		assertTrue(converter.convert('x').to(boolean.class));
-		assertTrue(converter.convert(Long.MIN_VALUE).to(boolean.class));
-		assertTrue(converter.convert(72).to(boolean.class));
-		assertFalse(converter.convert("false").to(boolean.class));
-		assertFalse(converter.convert("bleh").to(boolean.class));
-		assertFalse(converter.convert((char) 0).to(boolean.class));
-		assertFalse(converter.convert(null).to(boolean.class));
-		assertFalse(
-				converter.convert(Collections.emptyList()).to(boolean.class));
+		assertThat(converter.convert("true").to(boolean.class)).isTrue();
+		assertThat(converter.convert("TRUE").to(boolean.class)).isTrue();
+		assertThat(converter.convert('x').to(boolean.class)).isTrue();
+		assertThat(converter.convert(Long.MIN_VALUE).to(boolean.class)).isTrue();
+		assertThat(converter.convert(72).to(boolean.class)).isTrue();
+		assertThat(converter.convert("false").to(boolean.class)).isFalse();
+		assertThat(converter.convert("bleh").to(boolean.class)).isFalse();
+		assertThat(converter.convert((char) 0).to(boolean.class)).isFalse();
+		assertThat(converter.convert(null).to(boolean.class)).isFalse();
+		assertThat(converter.convert(Collections.emptyList()).to(boolean.class)).isFalse();
 
 		// Conversions to integer
-		assertEquals(Integer.valueOf(123),
-				converter.convert("123").to(int.class));
-		assertEquals(1, (int) converter.convert(true).to(int.class));
-		assertEquals(0, (int) converter.convert(false).to(int.class));
-		assertEquals(65, (int) converter.convert('A').to(int.class));
+		assertThat(converter.convert("123").to(int.class)).isEqualTo(Integer.valueOf(123));
+		assertThat((int) converter.convert(true).to(int.class)).isOne();
+		assertThat((int) converter.convert(false).to(int.class)).isZero();
+		assertThat((int) converter.convert('A').to(int.class)).isEqualTo(65);
 
 		// Conversions to long
-		assertEquals(Long.valueOf(65), converter.convert('A').to(Long.class));
+		assertThat(converter.convert('A').to(Long.class)).isEqualTo(Long.valueOf(65));
 
 		// Conversions to Class
-		assertEquals(BigDecimal.class,
-				converter.convert("java.math.BigDecimal").to(Class.class));
-		assertEquals(BigDecimal.class, converter.convert("java.math.BigDecimal")
+		assertThat(converter.convert("java.math.BigDecimal").to(Class.class)).isEqualTo(BigDecimal.class);
+		assertThat(converter.convert("java.math.BigDecimal")
 				.to(new TypeReference<Class< ? >>() {
-				}));
-		assertNull(converter.convert(null).to(Class.class));
-		assertNull(converter.convert(Collections.emptyList()).to(Class.class));
+				})).isEqualTo(BigDecimal.class);
+		assertThat(converter.convert(null).to(Class.class)).isNull();
+		assertThat(converter.convert(Collections.emptyList()).to(Class.class)).isNull();
 
-		assertEquals(Integer.valueOf(123),
-				converter.convert("123").to(Integer.class));
-		assertEquals(Long.valueOf(123),
-				converter.convert("123").to(Long.class));
-		assertEquals('1', (char) converter.convert("123").to(Character.class));
-		assertEquals('Q',
-				(char) converter.convert(null)
+		assertThat(converter.convert("123").to(Integer.class)).isEqualTo(Integer.valueOf(123));
+		assertThat(converter.convert("123").to(Long.class)).isEqualTo(Long.valueOf(123));
+		assertThat((char) converter.convert("123").to(Character.class)).isEqualTo('1');
+		assertThat((char) converter.convert(null)
 						.defaultValue('Q')
-						.to(Character.class));
-		assertEquals((char) 123,
-				(char) converter.convert(123L).to(Character.class));
-		assertEquals((char) 123,
-				(char) converter.convert(123).to(Character.class));
-		assertEquals(Byte.valueOf((byte) 123),
-				converter.convert("123").to(Byte.class));
-		assertEquals(Float.valueOf("12.3"),
-				converter.convert("12.3").to(Float.class));
-		assertEquals(Double.valueOf("12.3"),
-				converter.convert("12.3").to(Double.class));
+						.to(Character.class)).isEqualTo('Q');
+		assertThat((char) converter.convert(123L).to(Character.class)).isEqualTo((char) 123);
+		assertThat((char) converter.convert(123).to(Character.class)).isEqualTo((char) 123);
+		assertThat(converter.convert("123").to(Byte.class)).isEqualTo(Byte.valueOf((byte) 123));
+		assertThat(converter.convert("12.3").to(Float.class)).isEqualTo(Float.valueOf("12.3"));
+		assertThat(converter.convert("12.3").to(Double.class)).isEqualTo(Double.valueOf("12.3"));
 
 		// Conversions to Optional
 
 		Optional<String> s1 = converter.convert("1").to(Optional.class);
-		assertEquals("1", s1.get());
+		assertThat(s1).hasValue("1");
 
 		Optional<String> s2 = converter.convert("2")
 				.to(new TypeReference<Optional<String>>() {
 				});
-		assertEquals("2", s2.get());
+		assertThat(s2).hasValue("2");
 
 		Optional<String> n1 = converter.convert(null).to(Optional.class);
 
-		assertThat(n1).isNotNull().isEmpty();
+		assertThat(n1).isEmpty();
 
 		Optional<String> n2 = converter.convert(null)
 				.to(new TypeReference<Optional<String>>() {
 				});
-		assertThat(n2).isNotNull().isEmpty();
+		assertThat(n2).isEmpty();
 
 		// OptionalInt
 		OptionalInt oi1 = converter.convert("1").to(OptionalInt.class);
-		assertThat(oi1).isNotNull().isNotEmpty().hasValue(1);
+		assertThat(oi1).isNotEmpty().hasValue(1);
 
 		OptionalInt oiNull = converter.convert(null).to(OptionalInt.class);
-		assertThat(oiNull).isNotNull().isEmpty();
+		assertThat(oiNull).isEmpty();
 
-		assertThrows(ConversionException.class,
-				() -> converter.convert("badValue").to(OptionalInt.class));
+		assertThatExceptionOfType(ConversionException.class).isThrownBy(() -> converter.convert("badValue").to(OptionalInt.class));
 
 		// OptionalDouble
 		OptionalDouble od1 = converter.convert("1").to(OptionalDouble.class);
-		assertThat(od1).isNotNull().isNotEmpty().hasValue(1d);
+		assertThat(od1).isNotEmpty().hasValue(1d);
 
 		OptionalDouble odNull = converter.convert(null)
 				.to(OptionalDouble.class);
 		assertThat(odNull).isNotNull().isEmpty();
-		assertThrows(ConversionException.class,
-				() -> converter.convert("badValue").to(OptionalDouble.class));
+		assertThatExceptionOfType(ConversionException.class).isThrownBy(() -> converter.convert("badValue").to(OptionalDouble.class));
 
 		// OptionalLong
 		OptionalLong ol1 = converter.convert("1").to(OptionalLong.class);
-		assertThat(ol1).isNotNull().isNotEmpty().hasValue(1l);
+		assertThat(ol1).isNotEmpty().hasValue(1l);
 
 		OptionalLong olNull = converter.convert(null).to(OptionalLong.class);
 		assertThat(olNull).isNotNull().isEmpty();
-		assertThrows(ConversionException.class,
-				() -> converter.convert("badValue").to(OptionalLong.class));
+		assertThatExceptionOfType(ConversionException.class).isThrownBy(() -> converter.convert("badValue").to(OptionalLong.class));
 
 	}
 
@@ -252,15 +229,15 @@ public class ConverterTest {
 		Optional<Double> d = converter.convert("12.3")
 				.to(new TypeReference<Optional<Double>>() {
 				});
-		assertEquals(Double.valueOf("12.3"), d.get());
+		assertThat(d).hasValue(Double.valueOf("12.3"));
 
 		Optional<Double> dNull = converter.convert(null)
 				.to(new TypeReference<Optional<Double>>() {
 				});
 
-		assertThat(dNull).isNotNull().isEmpty();
+		assertThat(dNull).isEmpty();
 
-		assertThrows(ConversionException.class, () -> converter.convert("12.3")
+		assertThatExceptionOfType(ConversionException.class).isThrownBy(() -> converter.convert("12.3")
 				.to(new TypeReference<Optional<Integer>>() {
 				}));
 	}
@@ -279,22 +256,21 @@ public class ConverterTest {
 		char[] ca = new char[] {
 				'h', 'e', 'l', 'l', 'o'
 		};
-		assertEquals("hello", c.convert(ca).to(String.class));
+		assertThat(c.convert(ca).to(String.class)).isEqualTo("hello");
 
 		Character[] ca2 = c.convert(ca).to(Character[].class);
-		assertEquals("hello", c.convert(ca2).to(String.class));
+		assertThat(c.convert(ca2).to(String.class)).isEqualTo("hello");
 
 		List<Character> cl = c.convert(ca)
 				.to(new TypeReference<List<Character>>() {
 				});
-		assertEquals("hello", c.convert(cl).to(String.class));
+		assertThat(c.convert(cl).to(String.class)).isEqualTo("hello");
 
 		// And back
-		assertArrayEquals(ca, c.convert("hello").to(char[].class));
-		assertArrayEquals(ca2, c.convert("hello").to(Character[].class));
-		assertEquals(cl,
-				c.convert("hello").to(new TypeReference<List<Character>>() {
-				}));
+		assertThat(c.convert("hello").to(char[].class)).isEqualTo(ca);
+		assertThat(c.convert("hello").to(Character[].class)).isEqualTo(ca2);
+		assertThat(c.convert("hello").to(new TypeReference<List<Character>>() {
+				})).isEqualTo(cl);
 	}
 
 	private static String characterListToString(List<Character> cl) {
@@ -324,37 +300,35 @@ public class ConverterTest {
 
 	@Test
 	public void testEnums() {
-		assertSame(TestEnum.BLAH, converter.convert("BLAH").to(TestEnum.class));
-		assertSame(TestEnum.X, converter.convert('X').to(TestEnum.class));
-		assertSame(TestEnum.FALSE, converter.convert(false).to(TestEnum.class));
-		assertSame(TestEnum.BAR, converter.convert(1).to(TestEnum.class));
-		assertSame(TestEnum.BLAH,
-				converter.convert(TestEnum2.BLAH).to(TestEnum.class));
-		assertNull(converter.convert(null).to(TestEnum.class));
-		assertNull(
-				converter.convert(Collections.emptySet()).to(TestEnum.class));
+		assertThat(converter.convert("BLAH").to(TestEnum.class)).isSameAs(TestEnum.BLAH);
+		assertThat(converter.convert('X').to(TestEnum.class)).isSameAs(TestEnum.X);
+		assertThat(converter.convert(false).to(TestEnum.class)).isSameAs(TestEnum.FALSE);
+		assertThat(converter.convert(1).to(TestEnum.class)).isSameAs(TestEnum.BAR);
+		assertThat(converter.convert(TestEnum2.BLAH).to(TestEnum.class)).isSameAs(TestEnum.BLAH);
+		assertThat(converter.convert(null).to(TestEnum.class)).isNull();
+		assertThat(converter.convert(Collections.emptySet()).to(TestEnum.class)).isNull();
 	}
 
 	@Test
 	public void testToReflectType() {
 		Type t = TestEnum.class;
 		TestEnum e = converter.convert("X").to(t);
-		assertEquals(TestEnum.X, e);
+		assertThat(e).isEqualTo(TestEnum.X);
 	}
 
 	@Test
 	public void testIdentialTarget() {
 		Object o = new Object();
-		assertSame(o, converter.convert(o).to(Object.class));
+		assertThat(converter.convert(o).to(Object.class)).isSameAs(o);
 
 		Thread t = new Thread(); // No converter available
-		assertSame(t, converter.convert(t).to(Thread.class));
-		assertSame(t, converter.convert(t).to(Runnable.class));
-		assertSame(t, converter.convert(t).to(Object.class));
+		assertThat(converter.convert(t).to(Thread.class)).isSameAs(t);
+		assertThat(converter.convert(t).to(Runnable.class)).isSameAs(t);
+		assertThat(converter.convert(t).to(Object.class)).isSameAs(t);
 
 		Thread st = new Thread() {
 		}; // Subclass of Thread
-		assertSame(st, converter.convert(st).to(Thread.class));
+		assertThat(converter.convert(st).to(Thread.class)).isSameAs(st);
 	}
 
 	@Test
@@ -368,8 +342,8 @@ public class ConverterTest {
 		;
 		MyClass o = new MyClass();
 
-		assertEquals(1234, (int) converter.convert(o).to(int.class));
-		assertEquals("1234", converter.convert(o).to(String.class));
+		assertThat((int) converter.convert(o).to(int.class)).isEqualTo(1234);
+		assertThat(converter.convert(o).to(String.class)).isEqualTo("1234");
 	}
 
 	@Test
@@ -384,34 +358,32 @@ public class ConverterTest {
 		MyClass o = new MyClass();
 
 		URL url = converter.convert(o).to(URL.class);
-		assertEquals("http://127.0.0.1:1234/blah", url.toString());
-		assertEquals("http", url.getProtocol());
-		assertEquals("127.0.0.1", url.getHost());
-		assertEquals(1234, url.getPort());
-		assertEquals("/blah", url.getPath());
+		assertThat(url).hasToString("http://127.0.0.1:1234/blah");
+		assertThat(url.getProtocol()).isEqualTo("http");
+		assertThat(url.getHost()).isEqualTo("127.0.0.1");
+		assertThat(url.getPort()).isEqualTo(1234);
+		assertThat(url.getPath()).isEqualTo("/blah");
 
-		assertNull(converter.convert(null).to(URL.class));
-		assertNull(converter.convert(Collections.emptyList()).to(URL.class));
+		assertThat(converter.convert(null).to(URL.class)).isNull();
+		assertThat(converter.convert(Collections.emptyList()).to(URL.class)).isNull();
 	}
 
 	@Test
 	public void testFromMultiToSingle() {
-		assertEquals("abc", converter.convert(Collections.singleton("abc"))
-				.to(String.class));
-		assertEquals("abc",
-				converter.convert(Arrays.asList("abc", "def", "ghi"))
-						.to(String.class));
-		assertEquals(42, (int) converter.convert(Arrays.asList("42", "17"))
-				.to(Integer.class));
+		assertThat(converter.convert(Collections.singleton("abc"))
+				.to(String.class)).isEqualTo("abc");
+		assertThat(converter.convert(asList("abc", "def", "ghi"))
+						.to(String.class)).isEqualTo("abc");
+		assertThat((int) converter.convert(asList("42", "17"))
+				.to(Integer.class)).isEqualTo(42);
 		MyClass2 mc = converter.convert(new String[] {
 				"xxx", "yyy", "zzz"
 		}).to(MyClass2.class);
-		assertEquals("xxx", mc.toString());
+		assertThat(mc).hasToString("xxx");
 		MyClass2[] arr = new MyClass2[] {
 				new MyClass2("3.1412"), new MyClass2("6.2824")
 		};
-		assertEquals(Float.valueOf(3.1412f),
-				Float.valueOf(converter.convert(arr).to(float.class)));
+		assertThat(Float.valueOf(converter.convert(arr).to(float.class))).isEqualTo(Float.valueOf(3.1412f));
 	}
 
 	@Test
@@ -419,11 +391,11 @@ public class ConverterTest {
 		List<Object> l = new ArrayList<>(Arrays.asList("A", 'B', 333));
 
 		Set< ? > s = converter.convert(l).to(Set.class);
-		assertEquals(3, s.size());
+		assertThat(s.size()).isEqualTo(3);
 
 		for (Object o : s) {
 			Object expected = l.remove(0);
-			assertEquals(expected, o);
+			assertThat(o).isEqualTo(expected);
 		}
 	}
 
@@ -436,7 +408,7 @@ public class ConverterTest {
 		LinkedList<String> ll = converter.convert(s)
 				.to(new TypeReference<LinkedList<String>>() {
 				});
-		assertEquals(Arrays.asList("123", "456"), ll);
+		assertThat(ll).isEqualTo(Arrays.asList("123", "456"));
 	}
 
 	@Test
@@ -449,10 +421,10 @@ public class ConverterTest {
 		Set<Long> s = converter.convert(sa).to(new TypeReference<Set<Long>>() {
 		});
 
-		List<String> sl = new ArrayList<>(Arrays.asList(sa));
+		List<String> sl = new ArrayList<>(asList(sa));
 		for (long l : s) {
 			long expected = Long.parseLong(sl.remove(0));
-			assertEquals(expected, l);
+			assertThat(l).isEqualTo(expected);
 		}
 	}
 
@@ -462,8 +434,8 @@ public class ConverterTest {
 		s.add(Integer.MIN_VALUE);
 
 		long[] la = converter.convert(s).to(long[].class);
-		assertEquals(1, la.length);
-		assertEquals(Integer.MIN_VALUE, la[0]);
+		assertThat(la).hasSize(1);
+		assertThat(la[0]).isEqualTo(Integer.MIN_VALUE);
 	}
 
 	@Test
@@ -472,10 +444,10 @@ public class ConverterTest {
 				"999", "111", "-909"
 		};
 		Integer[] ia = converter.convert(sa).to(Integer[].class);
-		assertEquals(3, ia.length);
-		assertArrayEquals(new Integer[] {
+		assertThat(ia).hasSize(3);
+		assertThat(ia).isEqualTo(new Integer[] {
 				999, 111, -909
-		}, ia);
+		});
 	}
 
 	@Test
@@ -483,31 +455,31 @@ public class ConverterTest {
 		char[] ca = converter.convert(new int[] {
 				9, 8, 7
 		}).to(char[].class);
-		assertArrayEquals(new char[] {
+		assertThat(ca).isEqualTo(new char[] {
 				9, 8, 7
-		}, ca);
+		});
 		Character[] ca2 = converter.convert((long) 17).to(Character[].class);
-		assertArrayEquals(new Character[] {
+		assertThat(ca2).isEqualTo(new Character[] {
 				(char) 17
-		}, ca2);
+		});
 		char[] ca3 = converter.convert(new short[] {
 				257
 		}).to(char[].class);
-		assertArrayEquals(new char[] {
+		assertThat(ca3).isEqualTo(new char[] {
 				257
-		}, ca3);
+		});
 		char c = converter.convert(new char[] {
 				'x', 'y'
 		}).to(char.class);
-		assertEquals('x', c);
+		assertThat(c).isEqualTo('x');
 		char[] ca4a = {
 				'x', 'y'
 		};
 		char[] ca4b = converter.convert(ca4a).to(char[].class);
-		assertArrayEquals(new char[] {
+		assertThat(ca4b).isEqualTo(new char[] {
 				'x', 'y'
-		}, ca4b);
-		assertNotSame(ca4a, ca4b, "Should have created a new instance");
+		});
+		assertThat(ca4b).as("Should have created a new instance").isNotSameAs(ca4a);
 	}
 
 	/**
@@ -546,11 +518,11 @@ public class ConverterTest {
 			double[][][].class //
 	})
 	public void testNullToArrayConversion(Class< ? > arrayType) {
-		assertTrue(arrayType.isArray());
+		assertThat(arrayType.isArray()).isTrue();
 
 		Object array = converter.convert(null).to(arrayType);
-		assertEquals(0, Array.getLength(array));
-		assertTrue(arrayType.isInstance(array));
+		assertThat(Array.getLength(array)).isZero();
+		assertThat(arrayType.isInstance(array)).isTrue();
 	}
 
 	@Test
@@ -589,39 +561,33 @@ public class ConverterTest {
 	@Test
 	public void testLongCollectionConversion() {
 		long[] l = converter.convert(Long.MAX_VALUE).to(long[].class);
-		assertArrayEquals(new long[] {
+		assertThat(l).isEqualTo(new long[] {
 				Long.MAX_VALUE
-		}, l);
+		});
 		Long[] l2 = converter.convert(Long.MAX_VALUE).to(Long[].class);
-		assertArrayEquals(new Long[] {
+		assertThat(l2).isEqualTo(new Long[] {
 				Long.MAX_VALUE
-		}, l2);
+		});
 		List<Long> ll = converter.convert(new long[] {
 				Long.MIN_VALUE, Long.MAX_VALUE
 		}).to(new TypeReference<List<Long>>() {
 		});
-		assertEquals(Arrays.asList(Long.MIN_VALUE, Long.MAX_VALUE), ll);
+		assertThat(ll).isEqualTo(Arrays.asList(Long.MIN_VALUE, Long.MAX_VALUE));
 		List<Long> ll2 = converter.convert(Arrays.asList(123, 345))
 				.to(new TypeReference<List<Long>>() {
 				});
-		assertEquals(Arrays.asList(123L, 345L), ll2);
+		assertThat(ll2).isEqualTo(Arrays.asList(123L, 345L));
 
 	}
 
 	@Test
 	public void testExceptionDefaultValue() {
-		assertEquals(42,
-				(int) converter.convert("haha").defaultValue(42).to(int.class));
-		assertEquals(999,
-				(int) converter.convert("haha")
+		assertThat((int) converter.convert("haha").defaultValue(42).to(int.class)).isEqualTo(42);
+		assertThat((int) converter.convert("haha")
 						.defaultValue(999)
-						.to(int.class));
-		try {
-			converter.convert("haha").to(int.class);
-			fail("Should have thrown an exception");
-		} catch (ConversionException ex) {
-			// good
-		}
+						.to(int.class)).isEqualTo(999);
+		assertThatExceptionOfType(ConversionException.class).as("Should have thrown an exception")
+				.isThrownBy(() -> converter.convert("haha").to(int.class));
 	}
 
 	@Test
@@ -629,13 +595,13 @@ public class ConverterTest {
 		String[] sa = {
 				"A", "B"
 		};
-		assertEquals("A", converter.convert(sa).toString());
-		assertEquals("A", converter.convert(sa).to(String.class));
+		assertThat(converter.convert(sa)).hasToString("A");
+		assertThat(converter.convert(sa).to(String.class)).isEqualTo("A");
 
 		String[] sa2 = {
 				"A"
 		};
-		assertArrayEquals(sa2, converter.convert("A").to(String[].class));
+		assertThat(converter.convert("A").to(String[].class)).isEqualTo(sa2);
 	}
 
 	@Test
@@ -652,8 +618,8 @@ public class ConverterTest {
 		String[] sa = {
 				"A", "B"
 		};
-		assertEquals("A,B", adapted.convert(sa).to(String.class));
-		assertArrayEquals(sa, adapted.convert("A,B").to(String[].class));
+		assertThat(adapted.convert(sa).to(String.class)).isEqualTo("A,B");
+		assertThat(adapted.convert("A,B").to(String[].class)).isEqualTo(sa);
 	}
 
 	@Test
@@ -676,8 +642,8 @@ public class ConverterTest {
 		int[] ia = {
 				1, 2
 		};
-		assertEquals("1,2", adapted.convert(ia).to(String.class));
-		assertArrayEquals(ia, adapted.convert("1,2").to(int[].class));
+		assertThat(adapted.convert(ia).to(String.class)).isEqualTo("1,2");
+		assertThat(adapted.convert("1,2").to(int[].class)).isEqualTo(ia);
 	}
 
 	@Test
@@ -686,15 +652,15 @@ public class ConverterTest {
 		cb.rule(Date.class, (f, t) -> f instanceof String ? new Date(0)
 				: ConverterFunction.CANNOT_HANDLE);
 		Converter c1 = cb.build();
-		assertEquals(new Date(0), c1.convert("something").to(Date.class));
-		assertEquals(new Date(0), c1.convert("foo").to(Date.class));
+		assertThat(c1.convert("something").to(Date.class)).isEqualTo(new Date(0));
+		assertThat(c1.convert("foo").to(Date.class)).isEqualTo(new Date(0));
 
 		ConverterBuilder cb2 = c1.newConverterBuilder();
 		cb2.rule(Date.class, (f, t) -> f.equals("foo") ? new Date(100000)
 				: ConverterFunction.CANNOT_HANDLE);
 		Converter c2 = cb2.build();
-		assertEquals(new Date(0), c2.convert("something").to(Date.class));
-		assertEquals(new Date(100000), c2.convert("foo").to(Date.class));
+		assertThat(c2.convert("something").to(Date.class)).isEqualTo(new Date(0));
+		assertThat(c2.convert("foo").to(Date.class)).isEqualTo(new Date(100000));
 	}
 
 	@Test
@@ -715,26 +681,16 @@ public class ConverterTest {
 		ConverterBuilder cb = converter.newConverterBuilder();
 		Converter adapted = cb.errorHandler(func).build();
 
-		assertEquals(Integer.valueOf(12),
-				adapted.convert("12").to(Integer.class));
-		assertEquals(Integer.valueOf(-1),
-				adapted.convert("hello").to(Integer.class));
-		assertNull(adapted.convert("goodbye").to(Integer.class));
+		assertThat(adapted.convert("12").to(Integer.class)).isEqualTo(Integer.valueOf(12));
+		assertThat(adapted.convert("hello").to(Integer.class)).isEqualTo(Integer.valueOf(-1));
+		assertThat(adapted.convert("goodbye").to(Integer.class)).isNull();
 
-		try {
-			adapted.convert("nothing").to(Integer.class);
-			fail("Should have thrown a Conversion Exception when converting 'hello' to a number");
-		} catch (ConversionException ce) {
-			// good
-		}
+		assertThatExceptionOfType(ConversionException.class).as("Should have thrown a Conversion Exception when converting 'hello' to a number")
+				.isThrownBy(() -> adapted.convert("nothing").to(Integer.class));
 
 		// This is with the non-adapted converter
-		try {
-			converter.convert("hello").to(Integer.class);
-			fail("Should have thrown a Conversion Exception when converting 'hello' to a number");
-		} catch (ConversionException ce) {
-			// good
-		}
+		assertThatExceptionOfType(ConversionException.class).as("Should have thrown a Conversion Exception when converting 'hello' to a number")
+				.isThrownBy(() -> converter.convert("hello").to(Integer.class));
 	}
 
 	@Test
@@ -751,7 +707,7 @@ public class ConverterTest {
 		Map< ? , ? > m = new HashMap<>();
 
 		MyIntf i = c.convert(m).to(MyIntf.class);
-		assertEquals(123, i.value());
+		assertThat(i.value()).isEqualTo(123);
 	}
 
 	@Test
@@ -779,10 +735,8 @@ public class ConverterTest {
 		cb2.errorHandler(func2);
 		Converter adapted = cb2.build();
 
-		assertEquals(Integer.valueOf(0),
-				adapted.convert("hello").to(Integer.class));
-		assertEquals(Integer.valueOf(-1),
-				adapted.convert("bye").to(Integer.class));
+		assertThat(adapted.convert("hello").to(Integer.class)).isEqualTo(Integer.valueOf(0));
+		assertThat(adapted.convert("bye").to(Integer.class)).isEqualTo(Integer.valueOf(-1));
 	}
 
 	public static class MyConverterFunction implements ConverterFunction {
@@ -799,9 +753,9 @@ public class ConverterTest {
 	public void testUUIDConversion() {
 		UUID uuid = UUID.randomUUID();
 		String s = converter.convert(uuid).to(String.class);
-		assertTrue(s.length() > 0, "UUID should be something");
+		assertThat(s.length() > 0).as("UUID should be something").isTrue();
 		UUID uuid2 = converter.convert(s).to(UUID.class);
-		assertEquals(uuid, uuid2);
+		assertThat(uuid2).isEqualTo(uuid);
 	}
 
 	@Test
@@ -809,108 +763,108 @@ public class ConverterTest {
 		String p = "\\S*";
 		Pattern pattern = converter.convert(p).to(Pattern.class);
 		Matcher matcher = pattern.matcher("hi");
-		assertTrue(matcher.matches());
+		assertThat(matcher.matches()).isTrue();
 		String p2 = converter.convert(pattern).to(String.class);
-		assertEquals(p, p2);
+		assertThat(p2).isEqualTo(p);
 	}
 
 	@Test
 	public void testLocalDateTime() {
 		LocalDateTime ldt = LocalDateTime.now();
 		String s = converter.convert(ldt).to(String.class);
-		assertTrue(s.length() > 0);
+		assertThat(s.length()).isGreaterThan(0);
 		LocalDateTime ldt2 = converter.convert(s).to(LocalDateTime.class);
-		assertEquals(ldt, ldt2);
+		assertThat(ldt2).isEqualTo(ldt);
 	}
 
 	@Test
 	public void testLocalDate() {
 		LocalDate ld = LocalDate.now();
 		String s = converter.convert(ld).to(String.class);
-		assertTrue(s.length() > 0);
+		assertThat(s.length()).isGreaterThan(0);
 		LocalDate ld2 = converter.convert(s).to(LocalDate.class);
-		assertEquals(ld, ld2);
+		assertThat(ld2).isEqualTo(ld);
 	}
 
 	@Test
 	public void testLocalTime() {
 		LocalTime lt = LocalTime.now();
 		String s = converter.convert(lt).to(String.class);
-		assertTrue(s.length() > 0);
+		assertThat(s.length()).isGreaterThan(0);
 		LocalTime lt2 = converter.convert(s).to(LocalTime.class);
-		assertEquals(lt, lt2);
+		assertThat(lt2).isEqualTo(lt);
 	}
 
 	@Test
 	public void testOffsetDateTime() {
 		OffsetDateTime ot = OffsetDateTime.now();
 		String s = converter.convert(ot).to(String.class);
-		assertTrue(s.length() > 0);
+		assertThat(s.length()).isGreaterThan(0);
 		OffsetDateTime ot2 = converter.convert(s).to(OffsetDateTime.class);
-		assertEquals(ot, ot2);
+		assertThat(ot2).isEqualTo(ot);
 	}
 
 	@Test
 	public void testOffsetTime() {
 		OffsetTime ot = OffsetTime.now();
 		String s = converter.convert(ot).to(String.class);
-		assertTrue(s.length() > 0);
+		assertThat(s.length()).isGreaterThan(0);
 		OffsetTime ot2 = converter.convert(s).to(OffsetTime.class);
-		assertEquals(ot, ot2);
+		assertThat(ot2).isEqualTo(ot);
 	}
 
 	@Test
 	public void testZonedDateTime() {
 		ZonedDateTime zdt = ZonedDateTime.now();
 		String s = converter.convert(zdt).to(String.class);
-		assertTrue(s.length() > 0);
+		assertThat(s.length()).isGreaterThan(0);
 		ZonedDateTime zdt2 = converter.convert(s).to(ZonedDateTime.class);
-		assertEquals(zdt, zdt2);
+		assertThat(zdt2).isEqualTo(zdt);
 	}
 
 	@Test
 	public void testInstant() {
 		Instant i = Instant.now();
 		String s = converter.convert(i).to(String.class);
-		assertTrue(s.length() > 0);
+		assertThat(s.length()).isGreaterThan(0);
 		Instant i2 = converter.convert(s).to(Instant.class);
-		assertEquals(i, i2);
+		assertThat(i2).isEqualTo(i);
 	}
 
 	@Test
 	public void testMonthDay() {
 		MonthDay md = MonthDay.of(Month.APRIL, 1);
 		String s = converter.convert(md).to(String.class);
-		assertTrue(s.length() > 0);
+		assertThat(s.length()).isGreaterThan(0);
 		MonthDay md2 = converter.convert(s).to(MonthDay.class);
-		assertEquals(md, md2);
+		assertThat(md2).isEqualTo(md);
 	}
 
 	@Test
 	public void testYearMonth() {
 		YearMonth ym = YearMonth.of(1999, Month.APRIL);
 		String s = converter.convert(ym).to(String.class);
-		assertTrue(s.length() > 0);
+		assertThat(s.length()).isGreaterThan(0);
 		YearMonth ym2 = converter.convert(s).to(YearMonth.class);
-		assertEquals(ym, ym2);
+		assertThat(ym2).isEqualTo(ym);
 	}
 
 	@Test
 	public void testYear() {
 		Year y = Year.of(1999);
 		String s = converter.convert(y).to(String.class);
-		assertTrue(s.length() > 0);
+		assertThat(s.length()).isGreaterThan(0);
 		Year y2 = converter.convert(s).to(Year.class);
-		assertEquals(y, y2);
+		assertThat(y2).isEqualTo(y);
 	}
 
 	@Test
 	public void testDuration() {
 		Duration d = Duration.ofSeconds(42);
 		String s = converter.convert(d).to(String.class);
-		assertTrue(s.length() > 0);
+		assertThat(s.length()).isGreaterThan(0);
 		Duration d2 = converter.convert(s).to(Duration.class);
-		assertEquals(d, d2);
+		assertThat(d2).isEqualTo(d);
 	}
 
 	@Test
@@ -923,13 +877,13 @@ public class ConverterTest {
 		Converter c = converter;
 
 		String s = c.convert(d).toString();
-		assertEquals("1971-02-13T11:37:41Z", s);
-		assertEquals(d, c.convert(s).to(Date.class));
+		assertThat(s).isEqualTo("1971-02-13T11:37:41Z");
+		assertThat(c.convert(s).to(Date.class)).isEqualTo(d);
 
 		String s2 = c.convert(cal).toString();
-		assertEquals("1971-02-13T11:37:41Z", s2);
+		assertThat(s2).isEqualTo("1971-02-13T11:37:41Z");
 		Calendar cal2 = c.convert(s2).to(Calendar.class);
-		assertEquals(cal.getTime(), cal2.getTime());
+		assertThat(cal2.getTime()).isEqualTo(cal.getTime());
 	}
 
 	@Test
@@ -939,22 +893,21 @@ public class ConverterTest {
 		cal.setTimeZone(tz);
 
 		long l = converter.convert(cal).to(Long.class);
-		assertEquals(l, cal.getTimeInMillis());
+		assertThat(cal.getTimeInMillis()).isEqualTo(l);
 
 		Calendar cal2 = converter.convert(l).to(Calendar.class);
-		assertEquals(cal.getTime(), cal2.getTime());
+		assertThat(cal2.getTime()).isEqualTo(cal.getTime());
 	}
 
 	@Test
 	public void testDefaultValue() {
 		long l = converter.convert(null).defaultValue("12").to(Long.class);
-		assertEquals(12L, l);
-		assertNull(
-				converter.convert("haha").defaultValue(null).to(Integer.class));
-		assertNull(converter.convert("test")
+		assertThat(l).isEqualTo(12L);
+		assertThat(converter.convert("haha").defaultValue(null).to(Integer.class)).isNull();
+		assertThat(converter.convert("test")
 				.defaultValue(null)
 				.to(new TypeReference<List<Long>>() {
-				}));
+				})).isNull();
 	}
 
 	@Test
@@ -972,16 +925,16 @@ public class ConverterTest {
 
 		@SuppressWarnings("rawtypes")
 		Map m = converter.convert(dto).to(Map.class);
-		assertEquals(4, m.size());
-		assertEquals("lalala", m.get("ping"));
-		assertEquals(Long.MIN_VALUE, m.get("pong"));
-		assertEquals(Count.ONE, m.get("count"));
-		assertNotNull(m.get("embedded"));
+		assertThat(m.size()).isEqualTo(4);
+		assertThat(m.get("ping")).isEqualTo("lalala");
+		assertThat(m.get("pong")).isEqualTo(Long.MIN_VALUE);
+		assertThat(m.get("count")).isEqualTo(Count.ONE);
+		assertThat(m.get("embedded")).isNotNull();
 
 		MyEmbeddedDTO e = (MyEmbeddedDTO) m.get("embedded");
-		assertEquals("hohoho", e.marco);
-		assertEquals(Long.MAX_VALUE, e.polo);
-		assertEquals(Alpha.A, e.alpha);
+		assertThat(e.marco).isEqualTo("hohoho");
+		assertThat(e.polo).isEqualTo(Long.MAX_VALUE);
+		assertThat(e.alpha).isEqualTo(Alpha.A);
 	}
 
 	@Test
@@ -999,22 +952,21 @@ public class ConverterTest {
 
 		@SuppressWarnings("rawtypes")
 		Map m = converter.convert(dto).sourceAsDTO().to(Map.class);
-		assertEquals(4, m.size());
-		assertEquals("lalala", m.get("ping"));
-		assertEquals(Long.MIN_VALUE, m.get("pong"));
-		assertEquals(Count.ONE, m.get("count"));
-		assertNotNull(m.get("embedded"));
+		assertThat(m.size()).isEqualTo(4);
+		assertThat(m.get("ping")).isEqualTo("lalala");
+		assertThat(m.get("pong")).isEqualTo(Long.MIN_VALUE);
+		assertThat(m.get("count")).isEqualTo(Count.ONE);
+		assertThat(m.get("embedded")).isNotNull();
 
 		MyEmbeddedDTO e = (MyEmbeddedDTO) m.get("embedded");
-		assertEquals("hohoho", e.marco);
-		assertEquals(Long.MAX_VALUE, e.polo);
-		assertEquals(Alpha.A, e.alpha);
+		assertThat(e.marco).isEqualTo("hohoho");
+		assertThat(e.polo).isEqualTo(Long.MAX_VALUE);
+		assertThat(e.alpha).isEqualTo(Alpha.A);
 
 		/*
 		 * TODO this is the way it was, but it does not seem right Map e =
-		 * (Map)m.get("embedded"); assertEquals("hohoho", e.get("marco"));
-		 * assertEquals(Long.MAX_VALUE, e.get("polo")); assertEquals(Alpha.A,
-		 * e.get("alpha"));
+		 * (Map)m.get("embedded"); assertThat(e.get("marco")).isEqualTo("hohoho");
+		 * assertThat(e.get("polo")).isEqualTo(Long.MAX_VALUE); assertThat(* e.get("alpha")).isEqualTo(Alpha.A);
 		 */
 	}
 
@@ -1039,22 +991,22 @@ public class ConverterTest {
 
 		@SuppressWarnings("rawtypes")
 		Map m = converter.convert(dto).sourceAsDTO().to(Map.class);
-		assertEquals(4, m.size());
-		assertEquals("lalala", m.get("ping"));
-		assertEquals(Long.MIN_VALUE, m.get("pong"));
-		assertEquals(MyDTO8.Count.ONE, m.get("count"));
-		assertNotNull(m.get("embedded"));
-		assertTrue(m.get("embedded") instanceof MyDTOWithMethods);
+		assertThat(m.size()).isEqualTo(4);
+		assertThat(m.get("ping")).isEqualTo("lalala");
+		assertThat(m.get("pong")).isEqualTo(Long.MIN_VALUE);
+		assertThat(m.get("count")).isEqualTo(MyDTO8.Count.ONE);
+		assertThat(m.get("embedded")).isNotNull();
+		assertThat(m.get("embedded")).isInstanceOf(MyDTOWithMethods.class);
 		MyDTOWithMethods e = (MyDTOWithMethods) m.get("embedded");
-		assertEquals("lalala", e.ping);
-		assertEquals(Long.MIN_VALUE, e.pong);
-		assertEquals(Count.ONE, e.count);
-		assertNotNull(e.embedded);
+		assertThat(e.ping).isEqualTo("lalala");
+		assertThat(e.pong).isEqualTo(Long.MIN_VALUE);
+		assertThat(e.count).isEqualTo(Count.ONE);
+		assertThat(e.embedded).isNotNull();
 		assertThat(e.embedded).isInstanceOf(MyEmbeddedDTO.class);
 		MyEmbeddedDTO e2 = e.embedded;
-		assertEquals("hohoho", e2.marco);
-		assertEquals(Long.MAX_VALUE, e2.polo);
-		assertEquals(Alpha.A, e2.alpha);
+		assertThat(e2.marco).isEqualTo("hohoho");
+		assertThat(e2.polo).isEqualTo(Long.MAX_VALUE);
+		assertThat(e2.alpha).isEqualTo(Alpha.A);
 	}
 
 	@Test
@@ -1064,8 +1016,8 @@ public class ConverterTest {
 
 		@SuppressWarnings("rawtypes")
 		Map m = converter.convert(dto).to(Map.class);
-		assertEquals(1, m.size());
-		assertEquals("myValue", m.get("myProp"));
+		assertThat(m.size()).isEqualTo(1);
+		assertThat(m.get("myProp")).isEqualTo("myValue");
 	}
 
 	@Test
@@ -1076,20 +1028,20 @@ public class ConverterTest {
 		@SuppressWarnings("rawtypes")
 		Map m = converter.convert(dto).to(new TypeReference<Map<String, ? >>() {
 		});
-		assertEquals(1, m.size());
-		assertEquals(dto.charSet, m.get("charSet"));
+		assertThat(m.size()).isEqualTo(1);
+		assertThat(m.get("charSet")).isEqualTo(dto.charSet);
 
 		m = converter.convert(dto)
 				.to(new TypeReference<Map<String, ? extends List<String>>>() {
 				});
-		assertEquals(1, m.size());
+		assertThat(m).hasSize(1);
 
 		List<String> list = new ArrayList<>();
 		for (Character character : dto.charSet) {
 			list.add(String.valueOf(character));
 		}
 
-		assertEquals(list, m.get("charSet"));
+		assertThat(m.get("charSet")).isEqualTo(list);
 	}
 
 	@Test
@@ -1110,13 +1062,13 @@ public class ConverterTest {
 		expected.put("count", "THREE");
 		expected.put("pong", "0");
 		expected.put("embedded", null);
-		assertEquals(expected, new HashMap<String,String>(m));
+		assertThat(new HashMap<String,String>(m)).isEqualTo(expected);
 
 		MySubDTO dto2 = converter.convert(m).to(MySubDTO.class);
-		assertEquals("test", dto2.ping);
-		assertEquals(Count.THREE, dto2.count);
-		assertEquals(0L, dto2.pong);
-		assertNull(dto2.embedded);
+		assertThat(dto2.ping).isEqualTo("test");
+		assertThat(dto2.count).isEqualTo(Count.THREE);
+		assertThat(dto2.pong).isZero();
+		assertThat(dto2.embedded).isNull();
 	}
 
 	@Test
@@ -1132,13 +1084,13 @@ public class ConverterTest {
 		m.put("embedded", e);
 
 		MyDTO dto = converter.convert(m).to(MyDTO.class);
-		assertEquals("abc xyz", dto.ping);
-		assertEquals(42L, dto.pong);
-		assertEquals(Count.ONE, dto.count);
-		assertNotNull(dto.embedded);
-		assertEquals(dto.embedded.marco, "ichi ni san");
-		assertEquals(dto.embedded.polo, 64L);
-		assertEquals(dto.embedded.alpha, Alpha.A);
+		assertThat(dto.ping).isEqualTo("abc xyz");
+		assertThat(dto.pong).isEqualTo(42L);
+		assertThat(dto.count).isEqualTo(Count.ONE);
+		assertThat(dto.embedded).isNotNull();
+		assertThat("ichi ni san").isEqualTo(dto.embedded.marco);
+		assertThat(64L).isEqualTo(dto.embedded.polo);
+		assertThat(Alpha.A).isEqualTo(dto.embedded.alpha);
 	}
 
 	@Test
@@ -1147,7 +1099,7 @@ public class ConverterTest {
 		MyDTOWithMethods dto = converter.convert(src)
 				.targetAs(MyDTO.class)
 				.to(MyDTOWithMethods.class);
-		assertEquals(42, dto.pong);
+		assertThat(dto.pong).isEqualTo(42);
 	}
 
 	@Test
@@ -1156,7 +1108,7 @@ public class ConverterTest {
 	})
 	public void testDTOWithGenerics() {
 		MyDTO2 dto = new MyDTO2();
-		dto.longList = Arrays.asList(999L, 1000L);
+		dto.longList = asList(999L, 1000L);
 		dto.dtoMap = new LinkedHashMap<>();
 
 		MyDTO3 subDTO1 = new MyDTO3();
@@ -1168,9 +1120,9 @@ public class ConverterTest {
 		dto.dtoMap.put("aaa", subDTO2);
 
 		Map m = converter.convert(dto).to(Map.class);
-		assertEquals(2, m.size());
+		assertThat(m).hasSize(2);
 
-		assertEquals(Arrays.asList(999L, 1000L), m.get("longList"));
+		assertThat(m.get("longList")).isEqualTo(Arrays.asList(999L, 1000L));
 		Map nestedMap = (Map) m.get("dtoMap");
 
 		// Check iteration order is preserved by iterating
@@ -1180,21 +1132,17 @@ public class ConverterTest {
 			Map.Entry entry = it.next();
 			switch (i) {
 				case 0 :
-					assertEquals("zzz", entry.getKey());
+					assertThat(entry.getKey()).isEqualTo("zzz");
 					MyDTO3 dto1 = (MyDTO3) entry.getValue();
-					assertNotSame(subDTO1, dto1, "Should have created a copy");
-					assertEquals(
-							new HashSet<Character>(Arrays.asList('f', 'o')),
-							dto1.charSet);
+					assertThat(dto1).as("Should have created a copy").isNotSameAs(subDTO1);
+					assertThat(dto1.charSet).isEqualTo(new HashSet<Character>(Arrays.asList('f', 'o')));
 					break;
 				case 1 :
-					assertEquals("aaa", entry.getKey());
+					assertThat(entry.getKey()).isEqualTo("aaa");
 					MyDTO3 dto2 = (MyDTO3) entry.getValue();
-					assertNotSame(subDTO2, dto2, "Should have created a copy");
-					assertEquals(
-							new HashSet<Character>(
-									Arrays.asList('b', 'a', 'r')),
-							dto2.charSet);
+					assertThat(dto2).as("Should have created a copy").isNotSameAs(subDTO2);
+					assertThat(dto2.charSet).isEqualTo(new HashSet<Character>(
+									Arrays.asList('b', 'a', 'r')));
 					break;
 				default :
 					fail("Unexpected number of elements on map");
@@ -1203,16 +1151,14 @@ public class ConverterTest {
 
 		// convert back
 		MyDTO2 dto2 = converter.convert(m).to(MyDTO2.class);
-		assertEquals(dto.longList, dto2.longList);
+		assertThat(dto2.longList).isEqualTo(dto.longList);
 
 		// Cannot simply do dto.equals() as the DTOs don't implement that
-		assertEquals(dto.dtoMap.size(), dto2.dtoMap.size());
+		assertThat(dto2.dtoMap).hasSize(dto.dtoMap.size());
 		MyDTO3 dto2SubZZZ = dto2.dtoMap.get("zzz");
-		assertEquals(dto2SubZZZ.charSet,
-				new HashSet<Character>(Arrays.asList('f', 'o')));
+		assertThat(new HashSet<Character>(Arrays.asList('f', 'o'))).isEqualTo(dto2SubZZZ.charSet);
 		MyDTO3 dto2SubAAA = dto2.dtoMap.get("aaa");
-		assertEquals(dto2SubAAA.charSet,
-				new HashSet<Character>(Arrays.asList('b', 'a', 'r')));
+		assertThat(new HashSet<Character>(Arrays.asList('b', 'a', 'r'))).isEqualTo(dto2SubAAA.charSet);
 	}
 
 	@Test
@@ -1235,7 +1181,7 @@ public class ConverterTest {
 
 		MyDTO2 converted = converter.convert(dto).to(MyDTO2.class);
 
-		assertEquals(Arrays.asList(999L, 1000L), converted.longList);
+		assertThat(converted.longList).isEqualTo(Arrays.asList(999L, 1000L));
 		Map<String,MyDTO3> nestedMap = converted.dtoMap;
 
 		// Check iteration order is preserved by iterating
@@ -1245,19 +1191,15 @@ public class ConverterTest {
 			Map.Entry<String,MyDTO3> entry = it.next();
 			switch (i) {
 				case 0 :
-					assertEquals("zzz", entry.getKey());
+					assertThat(entry.getKey()).isEqualTo("zzz");
 					MyDTO3 dto1 = entry.getValue();
-					assertEquals(
-							new HashSet<Character>(Arrays.asList('f', 'o')),
-							dto1.charSet);
+					assertThat(dto1.charSet).isEqualTo(new HashSet<Character>(Arrays.asList('f', 'o')));
 					break;
 				case 1 :
-					assertEquals("aaa", entry.getKey());
+					assertThat(entry.getKey()).isEqualTo("aaa");
 					MyDTO3 dto2 = entry.getValue();
-					assertEquals(
-							new HashSet<Character>(
-									Arrays.asList('b', 'a', 'r')),
-							dto2.charSet);
+					assertThat(dto2.charSet).isEqualTo(new HashSet<Character>(
+									Arrays.asList('b', 'a', 'r')));
 					break;
 				default :
 					fail("Unexpected number of elements on map");
@@ -1275,12 +1217,11 @@ public class ConverterTest {
 		MyGenericDTOWithVariables<Character> converted = converter.convert(dto)
 				.to(new TypeReference<MyGenericDTOWithVariables<Character>>() {
 				});
-		assertEquals(Character.valueOf('1'), converted.raw);
-		assertArrayEquals(new Character[] {
+		assertThat(converted.raw).isEqualTo(Character.valueOf('1'));
+		assertThat(converted.array).isEqualTo(new Character[] {
 				'f', 'o', 'o'
-		}, converted.array);
-		assertEquals(new HashSet<Character>(Arrays.asList('f', 'o')),
-				converted.set);
+		});
+		assertThat(converted.set).isEqualTo(new HashSet<Character>(Arrays.asList('f', 'o')));
 	}
 
 	@Test
@@ -1288,7 +1229,7 @@ public class ConverterTest {
 		Map<String,String> m = new HashMap<>();
 		m.put("foo", "bar");
 		MyDTO3 dtoDoesNotMap = converter.convert(m).to(MyDTO3.class);
-		assertNull(dtoDoesNotMap.charSet);
+		assertThat(dtoDoesNotMap.charSet).isNull();
 	}
 
 	@Test
@@ -1296,8 +1237,8 @@ public class ConverterTest {
 	public void testCopyMap() {
 		Map m = new HashMap();
 		Map m2 = converter.convert(m).to(Map.class);
-		assertEquals(m, m2);
-		assertNotSame(m, m2);
+		assertThat(m2).isEqualTo(m);
+		assertThat(m2).isNotSameAs(m);
 	}
 
 	@Test
@@ -1306,10 +1247,10 @@ public class ConverterTest {
 	})
 	public void testCopyMap2() {
 		Map m = new HashMap();
-		m.put("key", Arrays.asList("a", "b", "c"));
+		m.put("key", asList("a", "b", "c"));
 		Map m2 = converter.convert(m).to(Map.class);
-		assertEquals(m, m2);
-		assertNotSame(m, m2);
+		assertThat(m2).isEqualTo(m);
+		assertThat(m2).isNotSameAs(m);
 	}
 
 	@Test
@@ -1318,8 +1259,7 @@ public class ConverterTest {
 		mb.intfVal = 17;
 		mb.beanVal = "Hello";
 
-		assertEquals(Collections.singletonMap("value", "Hello"),
-				converter.convert(mb).sourceAsBean().to(Map.class));
+		assertThat(converter.convert(mb).sourceAsBean().to(Map.class)).isEqualTo(Collections.singletonMap("value", "Hello"));
 	}
 
 	@Test
@@ -1328,11 +1268,10 @@ public class ConverterTest {
 		mb.intfVal = 17;
 		mb.beanVal = "Hello";
 
-		assertEquals(17,
-				converter.convert(mb)
+		assertThat(converter.convert(mb)
 						.sourceAs(MyIntf.class)
 						.to(Map.class)
-						.get("value"));
+						.get("value")).isEqualTo(17);
 	}
 
 	@Test
@@ -1341,19 +1280,17 @@ public class ConverterTest {
 		mb.intfVal = 17;
 		mb.beanVal = "Hello";
 
-		assertEquals(Collections.singletonMap("value", "Hello"),
-				converter.convert(mb).sourceAsBean().to(Map.class));
+		assertThat(converter.convert(mb).sourceAsBean().to(Map.class)).isEqualTo(Collections.singletonMap("value", "Hello"));
 	}
 
 	@Test
 	public void testConvertAsDTO() {
 		MyClass3 mc3 = new MyClass3(17);
 
-		assertEquals(17,
-				converter.convert(mc3)
+		assertThat(converter.convert(mc3)
 						.sourceAsDTO()
 						.to(Map.class)
-						.get("value"));
+						.get("value")).isEqualTo(17);
 	}
 
 	@Test
@@ -1372,72 +1309,71 @@ public class ConverterTest {
 		m.put("seven$.prop", "3.141");
 
 		MyDTO7 dto = converter.convert(m).to(MyDTO7.class);
-		assertEquals("test123", dto.org_osgi_framework_uuid);
-		assertTrue(dto.myProperty143);
-		assertEquals(42, dto.my$$prop);
-		assertEquals(Long.valueOf(456L), dto.dot_prop);
-		assertEquals(' ', dto._secret);
-		assertEquals("lalala", dto.another__prop);
-		assertEquals("hi ha ho", dto.three___prop);
-		assertEquals("", dto.four_$__prop);
-		assertEquals("test", dto.five_$_prop);
-		assertEquals((short) 987, dto.six$_$prop);
+		assertThat(dto.org_osgi_framework_uuid).isEqualTo("test123");
+		assertThat(dto.myProperty143).isTrue();
+		assertThat(dto.my$$prop).isEqualTo(42);
+		assertThat(dto.dot_prop).isEqualTo(Long.valueOf(456L));
+		assertThat(dto._secret).isEqualTo(' ');
+		assertThat(dto.another__prop).isEqualTo("lalala");
+		assertThat(dto.three___prop).isEqualTo("hi ha ho");
+		assertThat(dto.four_$__prop).isEmpty();
+		assertThat(dto.five_$_prop).isEqualTo("test");
+		assertThat(dto.six$_$prop).isEqualTo((short) 987);
 		dto.seven$$_$prop = 3.141;
 
 		// And convert back
 		Map<String,String> m2 = converter.convert(dto)
 				.to(new TypeReference<Map<String,String>>() {
 				});
-		assertEquals(new HashMap<String,String>(m),
-				new HashMap<String,String>(m2));
+		assertThat(new HashMap<String,String>(m2)).isEqualTo(new HashMap<String,String>(m));
 	}
 
 	@Test
 	public void testCollectionInterfaceMapping() {
 		Collection< ? > coll = converter.convert("test").to(Collection.class);
-		assertEquals("test", coll.iterator().next());
+		assertThat(coll.iterator().next()).isEqualTo("test");
 
 		List< ? > list = converter.convert("test").to(List.class);
-		assertEquals("test", list.iterator().next());
+		assertThat(list.iterator().next()).isEqualTo("test");
 
 		Set< ? > set = converter.convert("test").to(Set.class);
-		assertEquals("test", set.iterator().next());
+		assertThat(set.iterator().next()).isEqualTo("test");
 
 		NavigableSet< ? > ns = converter.convert("test").to(NavigableSet.class);
-		assertEquals("test", ns.iterator().next());
+		assertThat(ns.iterator().next()).isEqualTo("test");
 
 		SortedSet< ? > ss = converter.convert("test").to(SortedSet.class);
-		assertEquals("test", ss.iterator().next());
+		assertThat(ss.iterator().next()).isEqualTo("test");
 
 		Queue< ? > q = converter.convert("test").to(Queue.class);
-		assertEquals("test", q.iterator().next());
+		assertThat(q.iterator().next()).isEqualTo("test");
 
 		Deque< ? > dq = converter.convert("test").to(Deque.class);
-		assertEquals("test", dq.iterator().next());
+		assertThat(dq.iterator().next()).isEqualTo("test");
 
 		Map< ? , ? > m = converter.convert(Collections.singletonMap("x", "y"))
 				.to(Map.class);
-		assertEquals("y", m.get("x"));
+		assertThat(m.get("x")).isEqualTo("y");
 
 		ConcurrentMap< ? , ? > cm = converter
 				.convert(Collections.singletonMap("x", "y"))
 				.to(ConcurrentMap.class);
-		assertEquals("y", cm.get("x"));
+		assertThat(cm.get("x")).isEqualTo("y");
 
 		ConcurrentNavigableMap< ? , ? > cnm = converter
 				.convert(Collections.singletonMap("x", "y"))
 				.to(ConcurrentNavigableMap.class);
-		assertEquals("y", cnm.get("x"));
+		assertThat(cnm.get("x")).isEqualTo("y");
 
 		NavigableMap< ? , ? > nm = converter
 				.convert(Collections.singletonMap("x", "y"))
 				.to(NavigableMap.class);
-		assertEquals("y", nm.get("x"));
+		assertThat(nm.get("x")).isEqualTo("y");
 
 		SortedMap< ? , ? > sm = converter
 				.convert(Collections.singletonMap("x", "y"))
 				.to(SortedMap.class);
-		assertEquals("y", sm.get("x"));
+		assertThat(sm.get("x")).isEqualTo("y");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1455,18 +1391,16 @@ public class ConverterTest {
 
 		@SuppressWarnings("rawtypes")
 		Map m = converter.convert(intf).view().to(Map.class);
-		assertEquals(51, m.get("value"));
+		assertThat(m.get("value")).isEqualTo(51);
 
 		val[0] = 52;
-		assertEquals(52, m.get("value"),
-				"Changes to the backing map should be reflected");
+		assertThat(m.get("value")).as("Changes to the backing map should be reflected").isEqualTo(52);
 
 		m.put("value", 53);
-		assertEquals(53, m.get("value"));
+		assertThat(m.get("value")).isEqualTo(53);
 
 		val[0] = 54;
-		assertEquals(53, m.get("value"),
-				"Changes to the backing map should not be reflected any more");
+		assertThat(m.get("value")).as("Changes to the backing map should not be reflected any more").isEqualTo(53);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1479,22 +1413,22 @@ public class ConverterTest {
 
 		@SuppressWarnings("rawtypes")
 		Map m = converter.convert(myDTO).view().to(Map.class);
-		assertEquals(42L, m.get("pong"));
+		assertThat(m.get("pong")).isEqualTo(42L);
 
 		myDTO.ping = "Ping!";
-		assertEquals("Ping!", m.get("ping"));
+		assertThat(m.get("ping")).isEqualTo("Ping!");
 		myDTO.pong = 52L;
-		assertEquals(52L, m.get("pong"));
+		assertThat(m.get("pong")).isEqualTo(52L);
 		myDTO.ping = "Pong!";
-		assertEquals("Pong!", m.get("ping"));
-		assertNull(m.get("nonexistant"));
+		assertThat(m.get("ping")).isEqualTo("Pong!");
+		assertThat(m.get("nonexistant")).isNull();
 
 		m.put("pong", 62L);
 		myDTO.ping = "Poing!";
 		myDTO.pong = 72L;
-		assertEquals("Pong!", m.get("ping"));
-		assertEquals(62L, m.get("pong"));
-		assertNull(m.get("nonexistant"));
+		assertThat(m.get("ping")).isEqualTo("Pong!");
+		assertThat(m.get("pong")).isEqualTo(62L);
+		assertThat(m.get("nonexistant")).isNull();
 	}
 
 	@Test
@@ -1506,8 +1440,8 @@ public class ConverterTest {
 		Map<Character,Character> m = converter.convert(dto)
 				.to(new TypeReference<Map<Character,Character>>() {
 				});
-		assertEquals(1, m.size());
-		assertEquals('v', (char) m.get('k'));
+		assertThat(m).hasSize(1);
+		assertThat((char) m.get('k')).isEqualTo('v');
 
 		assertThat(m).asInstanceOf(InstanceOfAssertFactories.MAP)
 				.containsKey('k')
@@ -1526,12 +1460,12 @@ public class ConverterTest {
 				.view()
 				.to(new TypeReference<Map<String,Object>>() {
 				});
-		assertEquals(testURI, m.get("test"));
+		assertThat(m.get("test")).isEqualTo(testURI);
 
 		URI testURI2 = new URI("http://bar");
 		d.put("test2", testURI2);
-		assertEquals(testURI2, m.get("test2"));
-		assertEquals(testURI, m.get("test"));
+		assertThat(m.get("test2")).isEqualTo(testURI2);
+		assertThat(m.get("test")).isEqualTo(testURI);
 	}
 
 	@Test
@@ -1545,14 +1479,14 @@ public class ConverterTest {
 				.view()
 				.to(new TypeReference<Map<Boolean,Short>>() {
 				});
-		assertEquals(Short.valueOf("123"), m.get(Boolean.TRUE));
-		assertEquals(Short.valueOf("456"), m.get(Boolean.FALSE));
+		assertThat(m.get(Boolean.TRUE)).isEqualTo(Short.valueOf("123"));
+		assertThat(m.get(Boolean.FALSE)).isEqualTo(Short.valueOf("456"));
 
 		s.remove("true");
-		assertNull(m.get(Boolean.TRUE));
+		assertThat(m.get(Boolean.TRUE)).isNull();
 
 		s.put("TRUE", "999");
-		assertEquals(Short.valueOf("999"), m.get(Boolean.TRUE));
+		assertThat(m.get(Boolean.TRUE)).isEqualTo(Short.valueOf("999"));
 	}
 
 	@Test
@@ -1565,15 +1499,15 @@ public class ConverterTest {
 				.view()
 				.to(new TypeReference<Map<SomeEnum,Long>>() {
 				});
-		assertEquals(1, m.size());
-		assertEquals(Long.valueOf(Long.MAX_VALUE), m.get(SomeEnum.VALUE));
+		assertThat(m.size()).isEqualTo(1);
+		assertThat(m.get(SomeEnum.VALUE)).isEqualTo(Long.valueOf(Long.MAX_VALUE));
 
 		mb.beanVal = "" + Long.MIN_VALUE;
-		assertEquals(Long.valueOf(Long.MIN_VALUE), m.get(SomeEnum.VALUE));
+		assertThat(m.get(SomeEnum.VALUE)).isEqualTo(Long.valueOf(Long.MIN_VALUE));
 
 		m.put(SomeEnum.GETVALUE, 123L);
 		mb.beanVal = "12";
-		assertEquals(Long.valueOf(Long.MIN_VALUE), m.get(SomeEnum.VALUE));
+		assertThat(m.get(SomeEnum.VALUE)).isEqualTo(Long.valueOf(Long.MIN_VALUE));
 	}
 
 	@Test
@@ -1584,8 +1518,8 @@ public class ConverterTest {
 		m.put("length", "12");
 
 		PrefixDTO dto = converter.convert(m).to(PrefixDTO.class);
-		assertEquals(327L, dto.width);
-		assertEquals(0, dto.length, "This one should not be set");
+		assertThat(dto.width).isEqualTo(327L);
+		assertThat(dto.length).as("This one should not be set").isZero();
 
 		Map<String,String> m2 = converter.convert(dto)
 				.to(new TypeReference<HashMap<String,String>>() {
@@ -1593,7 +1527,7 @@ public class ConverterTest {
 		Map<String,String> expected = new HashMap<>();
 		expected.put("org.foo.bar.width", "327");
 		expected.put("org.foo.bar.length", "0");
-		assertEquals(expected, m2);
+		assertThat(m2).isEqualTo(expected);
 	}
 
 	@Test
@@ -1604,13 +1538,9 @@ public class ConverterTest {
 		m.put("length", "12");
 
 		PrefixInterface i = converter.convert(m).to(PrefixInterface.class);
-		assertEquals(327L, i.width());
-		try {
-			i.length();
-			fail("Should have thrown an exception");
-		} catch (ConversionException ce) {
-			// good
-		}
+		assertThat(i.width()).isEqualTo(327L);
+		assertThatExceptionOfType(ConversionException.class).as("Should have thrown an exception")
+				.isThrownBy(() -> i.length());
 
 		PrefixInterface i2 = new PrefixInterface() {
 			@Override
@@ -1630,7 +1560,7 @@ public class ConverterTest {
 		Map<String,String> expected = new HashMap<>();
 		expected.put("org.foo.bar.width", "" + Long.MAX_VALUE);
 		expected.put("org.foo.bar.length", "" + Integer.MIN_VALUE);
-		assertEquals(expected, m2);
+		assertThat(m2).isEqualTo(expected);
 	}
 
 	@Test
@@ -1641,8 +1571,8 @@ public class ConverterTest {
 		m.put("length", "12");
 
 		PrefixAnnotation pa = converter.convert(m).to(PrefixAnnotation.class);
-		assertEquals(327L, pa.width());
-		assertEquals(51, pa.length());
+		assertThat(pa.width()).isEqualTo(327L);
+		assertThat(pa.length()).isEqualTo(51);
 
 		Map<String,String> m2 = converter.convert(pa)
 				.to(new TypeReference<Map<String,String>>() {
@@ -1650,7 +1580,7 @@ public class ConverterTest {
 		Map<String,String> expected = new HashMap<>();
 		expected.put("org.foo.bar.width", "327");
 		expected.put("org.foo.bar.length", "51");
-		assertEquals(expected, m2);
+		assertThat(m2).isEqualTo(expected);
 	}
 
 	@Test
@@ -1658,14 +1588,13 @@ public class ConverterTest {
 		PrefixEnumAnnotation pea = converter.convert(Collections.emptyMap())
 				.to(PrefixEnumAnnotation.class);
 
-		assertEquals(1000, pea.timeout());
-		assertEquals(PrefixEnumAnnotation.Type.SINGLE, pea.type());
+		assertThat(pea.timeout()).isEqualTo(1000);
+		assertThat(pea.type()).isEqualTo(PrefixEnumAnnotation.Type.SINGLE);
 
 		@SuppressWarnings("rawtypes")
 		Map m = converter.convert(pea).to(Map.class);
-		assertEquals(1000L, m.get("com.acme.config.timeout"));
-		assertEquals(PrefixEnumAnnotation.Type.SINGLE,
-				m.get("com.acme.config.type"));
+		assertThat(m.get("com.acme.config.timeout")).isEqualTo(1000L);
+		assertThat(m.get("com.acme.config.type")).isEqualTo(PrefixEnumAnnotation.Type.SINGLE);
 	}
 
 	@Test
@@ -1674,14 +1603,14 @@ public class ConverterTest {
 		CharSequence cs = converter.convert(m)
 				.targetAs(String.class)
 				.to(CharSequence.class);
-		assertNull(cs);
+		assertThat(cs).isNull();
 
 		Map<String,String> m2 = new HashMap<>();
 		m2.put("Hi", "there");
 		CharSequence cs2 = converter.convert(m2)
 				.targetAs(String.class)
 				.to(CharSequence.class);
-		assertEquals("Hi", cs2);
+		assertThat(cs2).isEqualTo("Hi");
 	}
 
 	@SuppressWarnings({
@@ -1700,9 +1629,9 @@ public class ConverterTest {
 		MyDTOWithMethods actual = converter.convert(m)
 				.targetAsDTO()
 				.to(MyDTOWithMethods.class);
-		assertEquals(expected.count, actual.count);
-		assertEquals(expected.ping, actual.ping);
-		assertEquals(expected.pong, actual.pong);
+		assertThat(actual.count).isEqualTo(expected.count);
+		assertThat(actual.ping).isEqualTo(expected.ping);
+		assertThat(actual.pong).isEqualTo(expected.pong);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -1714,11 +1643,11 @@ public class ConverterTest {
 
 		List lc = converter.convert(la).to(List.class);
 
-		assertEquals(la.length, lc.size());
+		assertThat(lc).hasSameSizeAs(la);
 
 		int i = 0;
 		for (Iterator it = lc.iterator(); it.hasNext(); i++) {
-			assertEquals(la[i], it.next());
+			assertThat(it.next()).isEqualTo(la[i]);
 		}
 	}
 
@@ -1729,8 +1658,7 @@ public class ConverterTest {
 
 		MyGenericInterface converted = converter.convert(dto)
 				.to(MyGenericInterface.class);
-		assertEquals(new HashSet<Character>(Arrays.asList('f', 'o')),
-				converted.charSet());
+		assertThat(converted.charSet()).isEqualTo(new HashSet<Character>(Arrays.asList('f', 'o')));
 
 	}
 
@@ -1763,64 +1691,55 @@ public class ConverterTest {
 		MyGenericInterfaceOptional converted = converter.convert(dto)
 				.to(MyGenericInterfaceOptional.class);
 
-		assertThat(converted.text()).isNotNull().isPresent();
-		assertThat(converted.text()).get().isSameAs("foo");
+		assertThat(converted.text()).isPresent();
+		assertThat(converted.text()).containsSame("foo");
 		assertThat(converted.oInt()).hasValue(1);
 		assertThat(converted.oDouble()).hasValue(2D);
 		assertThat(converted.oLong()).hasValue(3L);
 
-		assertThat(converted.textOptional()).isNotNull().isPresent();
+		assertThat(converted.textOptional()).isPresent();
 		assertThat(converted.textOptional().get()).isNotNull()
 				.isSameAs("fooOptional");
 
-		assertThat(converted.textOptionalOptional()).isNotNull().isPresent();
-		assertThat(converted.textOptionalOptional().get()).isNotNull()
+		assertThat(converted.textOptionalOptional()).isPresent();
+		assertThat(converted.textOptionalOptional().get())
 				.isInstanceOf(Optional.class);
-		assertThat(converted.textOptionalOptional().get().get()).isNotNull()
+		assertThat(converted.textOptionalOptional().get().get())
 				.isNotEmpty()
 				.isSameAs("fooOptionalOptional");
 
-		assertThat(converted.textSetDefaultEmptyOptional()).isNotNull()
+		assertThat(converted.textSetDefaultEmptyOptional())
 				.isPresent();
-		assertThat(converted.textSetDefaultEmptyOptional().get())
-				.isSameAs("bar");
+		assertThat(converted.textSetDefaultEmptyOptional()).containsSame("bar");
 
-		assertThat(converted.textNotSetDefaultEmptyOptional()).isNotNull()
-				.isNotPresent();
+		assertThat(converted.textNotSetDefaultEmptyOptional()).isEmpty();
 
-		assertThat(converted.textNullSetDefaultEmptyOptional()).isNotNull()
-				.isNotPresent();
+		assertThat(converted.textNullSetDefaultEmptyOptional()).isEmpty();
 
 		assertThat(converted.optionalIntNotSetDefaultEmptyOptional())
-				.isNotNull()
 				.isNotPresent();
 		assertThat(converted.optionalDoubleNotSetDefaultEmptyOptional())
-				.isNotNull()
 				.isNotPresent();
 		assertThat(converted.optionalLongNotSetDefaultEmptyOptional())
-				.isNotNull()
 				.isNotPresent();
 
-		assertThat(converted.textNullSet()).isNotNull().isEmpty();
-		assertThat(converted.oDoubleNullSet()).isNotNull().isEmpty();
-		assertThat(converted.oLongNullSet()).isNotNull().isEmpty();
-		assertThat(converted.oIntNullSet()).isNotNull().isEmpty();
+		assertThat(converted.textNullSet()).isEmpty();
+		assertThat(converted.oDoubleNullSet()).isEmpty();
+		assertThat(converted.oLongNullSet()).isEmpty();
+		assertThat(converted.oIntNullSet()).isEmpty();
 
-		assertThrows(ConversionException.class, () -> converted.textNotSet());
+		assertThatExceptionOfType(ConversionException.class).isThrownBy(() -> converted.textNotSet());
 
-		assertThrows(ConversionException.class, () -> converted.oIntNotSet());
+		assertThatExceptionOfType(ConversionException.class).isThrownBy(() -> converted.oIntNotSet());
 
-		assertThrows(ConversionException.class,
-				() -> converted.oDoubleNotSet());
+		assertThatExceptionOfType(ConversionException.class).isThrownBy(() -> converted.oDoubleNotSet());
 
-		assertThrows(ConversionException.class, () -> converted.oLongNotSet());
+		assertThatExceptionOfType(ConversionException.class).isThrownBy(() -> converted.oLongNotSet());
 
 		// Conversion failures should be deferred when using interfaces
-		assertThrows(ConversionException.class, () -> converted.oIntBadValue());
-		assertThrows(ConversionException.class,
-				() -> converted.oDoubleBadValue());
-		assertThrows(ConversionException.class,
-				() -> converted.oLongBadValue());
+		assertThatExceptionOfType(ConversionException.class).isThrownBy(() -> converted.oIntBadValue());
+		assertThatExceptionOfType(ConversionException.class).isThrownBy(() -> converted.oDoubleBadValue());
+		assertThatExceptionOfType(ConversionException.class).isThrownBy(() -> converted.oLongBadValue());
 
 	}
 
@@ -1835,12 +1754,11 @@ public class ConverterTest {
 				.convert(dto)
 				.to(new TypeReference<MyGenericInterfaceWithVariables<Character>>() {
 				});
-		assertEquals(Character.valueOf('1'), converted.raw());
-		assertArrayEquals(new Character[] {
+		assertThat(converted.raw()).isEqualTo(Character.valueOf('1'));
+		assertThat(converted.array()).isEqualTo(new Character[] {
 				'f', 'o', 'o'
-		}, converted.array());
-		assertEquals(new HashSet<Character>(Arrays.asList('f', 'o')),
-				converted.set());
+		});
+		assertThat(converted.set()).isEqualTo(new HashSet<Character>(Arrays.asList('f', 'o')));
 	}
 
 	@Test
@@ -1861,8 +1779,8 @@ public class ConverterTest {
 		Map<String,Object> map = new HashMap<String,Object>();
 		map.put("code", "harley");
 		MyIntf2 inter = convWithErrorHandler.convert(map).to(MyIntf2.class);
-		assertEquals("harley", inter.code());
-		assertEquals(Integer.valueOf(0), inter.value());
+		assertThat(inter.code()).isEqualTo("harley");
+		assertThat(inter.value()).isEqualTo(Integer.valueOf(0));
 	}
 
 	@Test
@@ -1872,17 +1790,17 @@ public class ConverterTest {
 		EmptyInterface i = Converters.standardConverter()
 				.convert(map)
 				.to(EmptyInterface.class);
-		assertNotNull(i);
+		assertThat(i).isNotNull();
 
 		EmptyInterface2 j = Converters.standardConverter()
 				.convert(map)
 				.to(EmptyInterface2.class);
-		assertNotNull(j);
+		assertThat(j).isNotNull();
 
 		EmptyInterface3 k = Converters.standardConverter()
 				.convert(map)
 				.to(EmptyInterface3.class);
-		assertNotNull(k);
+		assertThat(k).isNotNull();
 	}
 
 	@interface AnnType {
@@ -1917,8 +1835,8 @@ public class ConverterTest {
 				.standardConverter()
 				.convert(new HashMap<String,Object>())
 				.to(clazz);
-		assertEquals(InterfaceWithDefaultMethod.RESULT, i.defaultMethod());
-		assertNull(i.defaultMethodNull());
+		assertThat(i.defaultMethod()).isEqualTo(InterfaceWithDefaultMethod.RESULT);
+		assertThat(i.defaultMethodNull()).isNull();
 		Assertions.assertThatExceptionOfType(ConversionException.class)
 				.isThrownBy(() -> i.defaultMethodException());
 
@@ -1935,7 +1853,7 @@ public class ConverterTest {
 
 		InterfaceWithDefaultMethod ie = c.convert(m)
 				.to(InterfaceWithDefaultMethod.class);
-		assertEquals("ok", ie.defaultMethodException());
+		assertThat(ie.defaultMethodException()).isEqualTo("ok");
 
 		Assertions.assertThatExceptionOfType(ConversionException.class)
 				.isThrownBy(() -> i.nonDefault());
@@ -1944,18 +1862,12 @@ public class ConverterTest {
 
 	@Test
 	public void testConvertBooleanToNumber() {
-		assertEquals(Byte.valueOf((byte) 1),
-				converter.convert(Boolean.TRUE).to(Byte.class));
-		assertEquals(Short.valueOf((short) 1),
-				converter.convert(Boolean.TRUE).to(Short.class));
-		assertEquals(Integer.valueOf(1),
-				converter.convert(Boolean.TRUE).to(Integer.class));
-		assertEquals(Long.valueOf(1),
-				converter.convert(Boolean.TRUE).to(Long.class));
-		assertEquals(Float.valueOf(1.0f),
-				converter.convert(Boolean.TRUE).to(Float.class));
-		assertEquals(Double.valueOf(1.0),
-				converter.convert(Boolean.TRUE).to(Double.class));
+		assertThat(converter.convert(Boolean.TRUE).to(Byte.class)).isEqualTo(Byte.valueOf((byte) 1));
+		assertThat(converter.convert(Boolean.TRUE).to(Short.class)).isEqualTo(Short.valueOf((short) 1));
+		assertThat(converter.convert(Boolean.TRUE).to(Integer.class)).isEqualTo(Integer.valueOf(1));
+		assertThat(converter.convert(Boolean.TRUE).to(Long.class)).isEqualTo(Long.valueOf(1));
+		assertThat(converter.convert(Boolean.TRUE).to(Float.class)).isEqualTo(Float.valueOf(1.0f));
+		assertThat(converter.convert(Boolean.TRUE).to(Double.class)).isEqualTo(Double.valueOf(1.0));
 	}
 
 	public static interface MyIntf2 {

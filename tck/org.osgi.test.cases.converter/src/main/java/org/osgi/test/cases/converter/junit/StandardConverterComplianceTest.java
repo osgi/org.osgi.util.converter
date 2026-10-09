@@ -17,12 +17,9 @@
  *******************************************************************************/
 package org.osgi.test.cases.converter.junit;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -64,7 +61,7 @@ public class StandardConverterComplianceTest {
 		BigDecimal bd = new BigDecimal(5);
 		Converter c = Converters.standardConverter();
 		Number nb = c.convert(bd).to(Number.class);
-		assertSame(bd,nb);
+		assertThat(nb).isSameAs(bd);
 
 		List<Long> toBeConverted = new ArrayList<Long>();
 		toBeConverted.add(5l);
@@ -80,11 +77,10 @@ public class StandardConverterComplianceTest {
 		Iterator<Number> iterator = collectionConverted.iterator();
 
 		for (int index = 0; index < 3; index++) {
-			assertEquals(toBeConverted.get(index).longValue(),
-					iterator.next().longValue());
+			assertThat(iterator.next().longValue()).isEqualTo(toBeConverted.get(index).longValue());
 		}
-		assertFalse(iterator.hasNext());
-		assertNotSame(toBeConverted, collectionConverted);
+		assertThat(iterator).isExhausted();
+		assertThat(collectionConverted).isNotSameAs(toBeConverted);
 	}
 
 	/**
@@ -107,8 +103,8 @@ public class StandardConverterComplianceTest {
 		List<String> list = converter.convert(Arrays.<Integer> asList(1, 2, 3))
 				.to(new TypeReference<List<String>>() {});
 
-		assertNotNull(list);
-		assertEquals(3, list.size());
+		assertThat(list).isNotNull();
+		assertThat(list).hasSize(3);
 	}
 
 	/**
@@ -127,8 +123,8 @@ public class StandardConverterComplianceTest {
 						Arrays.<Integer> asList(1, 2, 3)))
 				.to(GenericFieldDto.class);
 
-		assertNotNull(dto);
-		assertEquals(Arrays.asList("1", "2", "3"), dto.values);
+		assertThat(dto).isNotNull();
+		assertThat(dto.values).isEqualTo(Arrays.asList("1", "2", "3"));
 	}
 
 	public static class GenericFieldDto extends DTO {
@@ -151,16 +147,16 @@ public class StandardConverterComplianceTest {
 						Arrays.<Integer> asList(1, 2, 3)))
 				.to(new TypeReference<ParameterizedFieldDto<String>>() {});
 
-		assertNotNull(dto);
-		assertEquals(Arrays.asList("1", "2", "3"), dto.values);
+		assertThat(dto).isNotNull();
+		assertThat(dto.values).isEqualTo(Arrays.asList("1", "2", "3"));
 
 		ParameterizedFieldDto<Long> dto2 = converter
 				.convert(singletonMap("values",
 						Arrays.<Integer> asList(1, 2, 3)))
 				.to(new TypeReference<ParameterizedFieldDto<Long>>() {});
 
-		assertNotNull(dto2);
-		assertEquals(Arrays.asList(1L, 2L, 3L), dto2.values);
+		assertThat(dto2).isNotNull();
+		assertThat(dto2.values).isEqualTo(Arrays.asList(1L, 2L, 3L));
 	}
 
 	public static class ParameterizedFieldDto<T> extends DTO {
@@ -183,8 +179,8 @@ public class StandardConverterComplianceTest {
 						Arrays.<Integer> asList(1, 2, 3)))
 				.to(ReifiedFieldDto.class);
 
-		assertNotNull(dto);
-		assertEquals(Arrays.asList("1", "2", "3"), dto.values);
+		assertThat(dto).isNotNull();
+		assertThat(dto.values).isEqualTo(Arrays.asList("1", "2", "3"));
 	}
 
 	/**
@@ -204,8 +200,8 @@ public class StandardConverterComplianceTest {
 						Arrays.<Integer> asList(1, 2, 3)))
 				.to(ReifiedFieldDtoSub.class);
 
-		assertNotNull(dto);
-		assertEquals(Arrays.asList("1", "2", "3"), dto.values);
+		assertThat(dto).isNotNull();
+		assertThat(dto.values).isEqualTo(Arrays.asList("1", "2", "3"));
 	}
 
 	public static class ReifiedFieldDto extends ParameterizedFieldDto<String> {}
@@ -234,19 +230,19 @@ public class StandardConverterComplianceTest {
 
 		Map<String, ? > m = converter.convert(map)
 				.to(new TypeReference<Map<String, ? >>() {});
-		assertEquals(1, m.size());
-		assertEquals(charSet, m.get("charSet"));
+		assertThat(m.size()).isOne();
+		assertThat(m.get("charSet")).isEqualTo(charSet);
 
 		m = converter.convert(map)
 				.to(new TypeReference<Map<String, ? extends List<String>>>() {});
-		assertEquals(1, m.size());
+		assertThat(m.size()).isOne();
 
 		List<String> list = new ArrayList<>();
 		for (Character character : charSet) {
 			list.add(String.valueOf(character));
 		}
 
-		assertEquals(list, m.get("charSet"));
+		assertThat(m.get("charSet")).isEqualTo(list);
 	}
 
 }
