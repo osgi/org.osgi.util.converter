@@ -21,6 +21,9 @@ package org.osgi.test.cases.converter.junit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -347,6 +350,10 @@ public class ScalarConversionComplianceTest {
 	 * <td>v.length() &gt; 0 ? v.charAt(0) : 0</td>
 	 * </tr>
 	 * <tr>
+	 * <td>java.nio.file.Path</td>
+	 * <td>Paths.get(v)</td>
+	 * </tr>
+	 * <tr>
 	 * <td>java.time.Duration</td>
 	 * <td>Duration.parse(v)</td>
 	 * </tr>
@@ -463,6 +470,10 @@ public class ScalarConversionComplianceTest {
 		ZonedDateTime zonedDateTime = converter.convert(zonedDateTimeStr)
 				.to(ZonedDateTime.class);
 		assertThat(zonedDateTime).isEqualTo(ZonedDateTime.parse(zonedDateTimeStr));
+
+		String pathStr = "some" + File.separator + "dir" + File.separator + "file.txt";
+		Path convertedPath = converter.convert(pathStr).to(Path.class);
+		assertThat(convertedPath).isEqualTo(Paths.get(pathStr));
 
 		String uuidStr = "0-0-0-0-FF";
 		UUID convertedUUID = converter.convert(uuidStr).to(UUID.class);

@@ -19,6 +19,8 @@
 package org.osgi.util.converter;
 
 import java.lang.reflect.Method;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -211,6 +213,17 @@ class ConverterImpl implements InternalConverter {
 			@Override
 			public Pattern apply(String ps) {
 				return Pattern.compile(ps);
+			}
+		}) {
+			// empty subclass to capture generics
+		});
+
+		// Path is an interface, so it has neither a String constructor nor a
+		// valueOf(String) method: use the default file system
+		cb.rule(new Rule<String,Path>(new Function<String,Path>() {
+			@Override
+			public Path apply(String p) {
+				return Paths.get(p);
 			}
 		}) {
 			// empty subclass to capture generics
