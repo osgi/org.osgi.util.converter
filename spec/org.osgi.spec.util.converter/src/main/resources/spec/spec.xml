@@ -326,6 +326,12 @@ List&lt;Long&gt; list = c.convert("123").to(new TypeReference&lt;List&lt;Long&gt
               </row>
 
               <row>
+                <entry><code>java.nio.file.Path</code></entry>
+
+                <entry><code>Paths.get(v)</code></entry>
+              </row>
+
+              <row>
                 <entry><code>java.time.Duration</code></entry>
 
                 <entry><code>Duration.parse(v)</code></entry>
@@ -419,6 +425,11 @@ List&lt;Long&gt; list = c.convert("123").to(new TypeReference&lt;List&lt;Long&gt
             </tbody>
           </tgroup>
         </table>
+
+        <para><code>java.nio.file.Path</code> is an interface and therefore
+        has neither a <code>valueOf(String)</code> method nor a constructor
+        taking a <code>String</code>. A <code>Path</code> is instead obtained
+        from the default file system.</para>
 
         <para><emphasis>Note to implementors:</emphasis> some of the classes
         mentioned in table <xref
